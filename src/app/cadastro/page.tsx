@@ -21,15 +21,15 @@ const PROF_SEGS = [
 ]
 
 const EMP_SEGS = [
-  {val:'homecare', label:'Empresa de Home Care',               icon:'🏠', seg:'s3'},
-  {val:'agencia',  label:'Agência de Cuidadores',              icon:'👥', seg:'s3'},
-  {val:'ilpi',     label:'ILPI / Longa Permanência',           icon:'🏛️', seg:'s4'},
-  {val:'clinica',  label:'Clínica de Internação / Transição',  icon:'🏥', seg:'s4'},
+  {val:'homecare', label:'Empresa de Home Care',              icon:'🏠', seg:'s3'},
+  {val:'agencia',  label:'Agência de Cuidadores',             icon:'👥', seg:'s3'},
+  {val:'ilpi',     label:'ILPI / Longa Permanência',          icon:'🏛️', seg:'s4'},
+  {val:'clinica',  label:'Clínica de Internação / Transição', icon:'🏥', seg:'s4'},
 ]
 
 const BENEFITS = {
   s1: {
-    color: G, label: 'Segmento 1 — Consultoria em Domicílio',
+    color: G, label: 'Consultoria em Domicílio',
     items: [
       {icon:'🦷', t:'Kit de Higiene Bucal KIN', d:'Enxaguante + pasta dental entregues ao seu paciente como benefício da parceria.'},
       {icon:'🩺', t:'Consultoria In Loco', d:'Nosso dentista vai até a residência do paciente, avalia e orienta o cuidador e a família.'},
@@ -37,7 +37,7 @@ const BENEFITS = {
     ],
   },
   s2: {
-    color: S, label: 'Segmento 2 — Avaliação em Parceria',
+    color: S, label: 'Avaliação em Parceria',
     items: [
       {icon:'💰', t:'R$ 150 por avaliação realizada', d:'Você indica o paciente, nosso dentista avalia e você recebe R$ 150 automaticamente.'},
       {icon:'📲', t:'Indicação simples pelo portal', d:'Registre nome e contato do paciente no seu portal. Nós cuidamos do resto.'},
@@ -45,7 +45,7 @@ const BENEFITS = {
     ],
   },
   s3: {
-    color: T, label: 'Segmento 3 — Pacote Home Care',
+    color: T, label: 'Pacote Home Care',
     items: [
       {icon:'🎓', t:'Curso Online com Certificação', d:'Treinamento completo para cuidadores com material didático e certificado ao final.'},
       {icon:'🩺', t:'Consultoria In Loco', d:'Dentista MDC visita e orienta sua equipe sobre as necessidades de cada paciente.'},
@@ -53,7 +53,7 @@ const BENEFITS = {
     ],
   },
   s4: {
-    color: C, label: 'Segmento 4 — Pacote ILPI / Instituição',
+    color: C, label: 'Pacote ILPI / Instituição',
     items: [
       {icon:'🔍', t:'Avaliações Gratuitas', d:'Triagem geral, avaliação de demanda semanal e avaliação de admissão — tudo incluso.'},
       {icon:'🎓', t:'Curso com Certificação', d:'Capacitação completa para toda a equipe de cuidadores e técnicos da instituição.'},
@@ -234,8 +234,8 @@ export default function Cadastro() {
           <h2 style={{ fontSize: 20, fontWeight: 700, color: N, marginBottom: 4 }}>Escolha seu modelo de parceria</h2>
           <p style={{ fontSize: 13, color: '#64748B', marginBottom: 16 }}>Dois formatos disponíveis. Escolha o que faz mais sentido para você.</p>
           {[
-            {val:'s1', color:G, icon:'🏠', t:'Segmento 1 — Consultoria em Domicílio', tag:'Kit KIN incluso', d:'Você indica o paciente e nós levamos atendimento + kit de higiene bucal até a residência dele.'},
-            {val:'s2', color:S, icon:'💰', t:'Segmento 2 — Avaliação em Parceria',     tag:'R$ 150 / indicação', d:'Você indica, nós avaliamos e você recebe R$ 150 por cada avaliação realizada.'},
+            {val:'s1', color:G, icon:'🏠', t:'Consultoria em Domicílio', tag:'Kit KIN incluso', d:'Vamos até a casa do paciente e oferecemos uma consultoria completa de orientação de higiene bucal para treinamento do familiar e cuidadores.'},
+            {val:'s2', color:S, icon:'💰', t:'Avaliação em Parceria',     tag:'Kit KIN incluso', d:'Fazemos a avaliação e tratamento com um acompanhamento mútuo do paciente (nessa opção o paciente ganha o Kit de Higiene Bucal).'},
           ].map(opt => {
             const sel = form.escolha === opt.val
             return (
