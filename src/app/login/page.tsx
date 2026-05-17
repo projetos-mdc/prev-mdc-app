@@ -30,7 +30,7 @@ export default function Login() {
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <div style={{ width: 50, height: 50, borderRadius: 13, background: G, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontSize: 22 }}>🦷</div>
           <h2 style={{ fontSize: 20, fontWeight: 700, color: N, marginBottom: 4 }}>Portal do Parceiro</h2>
-          <p style={{ fontSize: 13, color: '#64748B' }}>Meu Dentista em Casa</p>
+          <p style={{ fontSize: 13, color: '#64748B' }}>Meu Dentista em Casa - v2</p>
         </div>
 
         {[
@@ -67,3 +67,4 @@ export default function Login() {
     </div>
   )
 }
+
