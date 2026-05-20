@@ -41,6 +41,10 @@ export default function Portal() {
   const [novaSaving, setNovaSaving] = useState(false)
   const [novaOk, setNovaOk] = useState(false)
   const [novaErro, setNovaErro] = useState('')
+  const [tipoInd, setTipoInd] = useState<'s1'|'s2'|''>('')
+
+  const isProf = partner?.tipo === 'profissional' ?? false
+  const isEmpresaS2 = !isProf && partner?.segmento === 's2'
 
   const loadIndicacoes = useCallback(async (id: string) => {
     const { data } = await supabase
@@ -60,6 +64,7 @@ export default function Portal() {
 
   async function enviarIndicacao() {
     if (!novaForm.nome || !novaForm.telefone) { setNovaErro('Nome e telefone são obrigatórios.'); return }
+    if (isProf && !tipoInd) { setNovaErro('Selecione o tipo de indicação.'); return }
     setNovaSaving(true); setNovaErro('')
     const { error } = await supabase.from('indicacoes').insert({
       parceiro_id: partner!.id,
@@ -67,12 +72,13 @@ export default function Portal() {
       paciente_telefone: novaForm.telefone.trim(),
       observacoes: novaForm.obs.trim(),
       status: 'aguardando',
-      valor_repasse: partner!.segmento === 's2' ? 150 : null,
+      valor_repasse: isProf ? (tipoInd === 's2' ? 150 : null) : (isEmpresaS2 ? 150 : null),
     })
     setNovaSaving(false)
     if (error) { setNovaErro('Erro ao enviar indicação.'); return }
     setNovaOk(true)
     setNovaForm({ nome: '', telefone: '', obs: '' })
+    setTipoInd('')
     await loadIndicacoes(partner!.id)
     setTimeout(() => { setNovaOk(false); setTab('pacientes') }, 2000)
   }
@@ -87,14 +93,15 @@ export default function Portal() {
 
   if (!partner) return null
 
-  const isS2 = partner.segmento === 's2'
-  const totalRepasse = indicacoes.filter(i => i.status === 'avaliado' || i.status === 'tratamento' || i.status === 'finalizado').length * 150
+  const totalRepasse = indicacoes
+    .filter(i => i.valor_repasse && ['avaliado','tratamento','finalizado'].includes(i.status))
+    .reduce((sum, i) => sum + (i.valor_repasse || 0), 0)
 
   const stats = [
     { label: 'Indicações', value: String(indicacoes.length), color: N },
     { label: 'Avaliações', value: String(indicacoes.filter(i => ['avaliado','tratamento','finalizado'].includes(i.status)).length), color: G },
     { label: 'Em tratamento', value: String(indicacoes.filter(i => i.status === 'tratamento').length), color: T },
-    ...(isS2 ? [{ label: 'A receber', value: `R$ ${totalRepasse}`, color: S }] : []),
+    ...(isProf || isEmpresaS2 ? [{ label: 'A receber', value: `R$ ${totalRepasse}`, color: S }] : []),
   ]
 
   return (
@@ -113,7 +120,10 @@ export default function Portal() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <div style={{ textAlign: 'right' }}>
               <div style={{ color: '#fff', fontSize: 13, fontWeight: 500 }}>{partner.nome}</div>
-              <div style={{ color: C, fontSize: 11 }}>{partner.especialidade} · Seg. {partner.segmento.toUpperCase()}</div>
+              <div style={{ color: C, fontSize: 11 }}>
+                {partner.especialidade}
+                {!isProf && ` · ${partner.segmento === 's3' ? 'Home Care' : partner.segmento === 's4' ? 'ILPI' : ''}`}
+              </div>
             </div>
             <button onClick={sair} style={{ background: 'none', border: '1px solid #2F6C82', color: '#B0E8E6', padding: '5px 12px', borderRadius: 7, fontSize: 12, cursor: 'pointer' }}>Sair</button>
           </div>
@@ -197,6 +207,33 @@ export default function Portal() {
               </div>
             )}
 
+            {isProf && (
+              <div style={{ marginBottom: 18 }}>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 8 }}>Tipo de indicação *</label>
+                {[
+                  { val: 's1', icon: '🏠', t: 'Consultoria em Domicílio', color: G, d: 'Vamos até a casa do paciente e oferecemos uma consultoria completa de orientação de higiene bucal para treinamento do familiar e cuidadores.' },
+                  { val: 's2', icon: '💰', t: 'Avaliação em Parceria', color: S, tag: 'R$ 150 para você', d: 'Fazemos a avaliação e tratamento com um acompanhamento mútuo do paciente (o paciente ganha o Kit de Higiene Bucal).' },
+                ].map(opt => {
+                  const sel = tipoInd === opt.val
+                  return (
+                    <button key={opt.val} onClick={() => setTipoInd(opt.val as 's1'|'s2')} style={{
+                      display: 'block', width: '100%', padding: 0, marginBottom: 10,
+                      border: `1.5px solid ${sel ? opt.color : '#CBD5E1'}`,
+                      borderRadius: 12, cursor: 'pointer', textAlign: 'left',
+                      background: sel ? opt.color + '12' : '#fff',
+                    }}>
+                      <div style={{ padding: '10px 14px', borderBottom: `1px solid ${sel ? opt.color + '40' : '#E2E8F0'}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 16 }}>{opt.icon}</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: opt.color }}>{opt.t}</span>
+                        {(opt as any).tag && <span style={{ marginLeft: 'auto', padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: opt.color + '20', color: opt.color }}>{(opt as any).tag}</span>}
+                      </div>
+                      <p style={{ padding: '8px 14px', fontSize: 12, color: '#64748B', margin: 0, lineHeight: 1.5 }}>{opt.d}</p>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+
             {[
               { label: 'Nome do paciente *', key: 'nome', ph: 'Nome completo' },
               { label: 'Telefone de contato *', key: 'telefone', ph: '(61) 99999-9999' },
@@ -223,7 +260,7 @@ export default function Portal() {
               />
             </div>
 
-            {isS2 && (
+            {(tipoInd === 's2' || isEmpresaS2) && (
               <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#1E40AF' }}>
                 💰 Você receberá <strong>R$ 150</strong> após a avaliação ser realizada.
               </div>
@@ -249,7 +286,9 @@ export default function Portal() {
                 ['E-mail', partner.email],
                 ['Tipo de parceiro', partner.tipo === 'profissional' ? 'Profissional de Saúde' : 'Empresa / Instituição'],
                 ['Especialidade', partner.especialidade],
-                ['Modelo de parceria', `Segmento ${partner.segmento.toUpperCase()}`],
+                ...(isProf
+                  ? [['Modelos disponíveis', 'Consultoria em Domicílio · Avaliação em Parceria']]
+                  : [['Modelo de parceria', partner.segmento === 's3' ? 'Pacote Home Care' : partner.segmento === 's4' ? 'Pacote ILPI' : partner.segmento]]),
               ].map(([label, val]) => (
                 <div key={label}>
                   <div style={{ fontSize: 11, fontWeight: 600, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 4 }}>{label}</div>

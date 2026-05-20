@@ -92,10 +92,9 @@ export default function Cadastro() {
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }))
 
   const isProf = form.tipo === 'profissional'
-  const total = isProf ? 5 : 4
+  const total = 4
 
   const getBenefitKey = (): BenefitKey => {
-    if (isProf) return (form.escolha || 's1') as BenefitKey
     const found = EMP_SEGS.find(s => s.val === form.especialidade)
     return (found?.seg || 's3') as BenefitKey
   }
@@ -103,7 +102,6 @@ export default function Cadastro() {
   async function finalizar() {
     setLoading(true)
     setErro('')
-    const segFinal = getBenefitKey()
     const { error } = await supabase.from('parceiros').insert({
       nome: form.nome.trim(),
       email: form.email.toLowerCase().trim(),
@@ -111,7 +109,7 @@ export default function Cadastro() {
       senha: form.senha,          // Em prod: hash com bcrypt
       tipo: form.tipo,
       especialidade: form.especialidade,
-      segmento: segFinal,
+      segmento: isProf ? 'profissional' : getBenefitKey(),
       status: 'ativo',
     })
     setLoading(false)
@@ -228,44 +226,38 @@ export default function Cadastro() {
           {erro && <p style={{ color: '#EF4444', fontSize: 13, marginTop: 8 }}>{erro}</p>}
         </>)}
 
-        {/* PASSO 2 — Escolha do modelo (só profissional) */}
+        {/* PASSO 2 — Info dos modelos disponíveis (profissional) */}
         {step === 2 && isProf && card(<>
           <button onClick={back} style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', fontSize: 13, marginBottom: 16, padding: 0 }}>← Voltar</button>
-          <h2 style={{ fontSize: 20, fontWeight: 700, color: N, marginBottom: 4 }}>Escolha seu modelo de parceria</h2>
-          <p style={{ fontSize: 13, color: '#64748B', marginBottom: 16 }}>Dois formatos disponíveis. Escolha o que faz mais sentido para você.</p>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: N, marginBottom: 4 }}>Como funciona sua parceria</h2>
+          <p style={{ fontSize: 13, color: '#64748B', marginBottom: 16 }}>Você escolhe o modelo na hora de indicar cada paciente. Veja as opções disponíveis:</p>
           {[
-            {val:'s1', color:G, icon:'🏠', t:'Consultoria em Domicílio', tag:'Kit KIN incluso', d:'Vamos até a casa do paciente e oferecemos uma consultoria completa de orientação de higiene bucal para treinamento do familiar e cuidadores.'},
-            {val:'s2', color:S, icon:'💰', t:'Avaliação em Parceria',     tag:'Kit KIN incluso', d:'Fazemos a avaliação e tratamento com um acompanhamento mútuo do paciente (nessa opção o paciente ganha o Kit de Higiene Bucal).'},
-          ].map(opt => {
-            const sel = form.escolha === opt.val
-            return (
-              <button key={opt.val} onClick={() => set('escolha', opt.val)} style={{
-                display: 'block', width: '100%', padding: 0, marginBottom: 12,
-                border: `1.5px solid ${sel ? opt.color : '#CBD5E1'}`,
-                borderRadius: 12, cursor: 'pointer', textAlign: 'left',
-                background: sel ? opt.color + '12' : '#fff',
-              }}>
-                <div style={{ padding: '11px 16px', borderBottom: `1px solid ${sel ? opt.color + '40' : '#E2E8F0'}`, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 18 }}>{opt.icon}</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: opt.color }}>{opt.t}</span>
-                  <span style={{ marginLeft: 'auto', padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: opt.color + '20', color: opt.color }}>{opt.tag}</span>
-                </div>
-                <p style={{ padding: '10px 16px', fontSize: 12, color: '#64748B', margin: 0 }}>{opt.d}</p>
-              </button>
-            )
-          })}
-          {btn('Ver meu pacote →', () => { if (!form.escolha) { setErro('Escolha um modelo.'); return }; setErro(''); setStep(3) })}
-          {erro && <p style={{ color: '#EF4444', fontSize: 13, marginTop: 8 }}>{erro}</p>}
+            {color:G, icon:'🏠', t:'Consultoria em Domicílio', d:'Vamos até a casa do paciente e oferecemos uma consultoria completa de orientação de higiene bucal para treinamento do familiar e cuidadores.'},
+            {color:S, icon:'💰', t:'Avaliação em Parceria', tag:'R$ 150 por indicação avaliada', d:'Fazemos a avaliação e tratamento com um acompanhamento mútuo do paciente (o paciente ganha o Kit de Higiene Bucal).'},
+          ].map((opt, i) => (
+            <div key={i} style={{
+              marginBottom: 12, border: `1.5px solid ${opt.color}40`,
+              borderRadius: 12, overflow: 'hidden',
+            }}>
+              <div style={{ padding: '11px 16px', borderBottom: `1px solid ${opt.color}40`, display: 'flex', alignItems: 'center', gap: 8, background: opt.color + '12' }}>
+                <span style={{ fontSize: 18 }}>{opt.icon}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: opt.color }}>{opt.t}</span>
+                {opt.tag && <span style={{ marginLeft: 'auto', padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: opt.color + '20', color: opt.color }}>{opt.tag}</span>}
+              </div>
+              <p style={{ padding: '10px 16px', fontSize: 12, color: '#64748B', margin: 0, lineHeight: 1.6 }}>{opt.d}</p>
+            </div>
+          ))}
+          {erro && <p style={{ color: '#EF4444', fontSize: 13, marginTop: 12 }}>{erro}</p>}
+          {btn(loading ? 'Salvando...' : 'Confirmar parceria →', finalizar, G, loading)}
         </>)}
 
-        {/* PASSO 2 (empresa) ou 3 (profissional) — Benefícios */}
-        {((step === 2 && !isProf) || (step === 3 && isProf)) && (() => {
+        {/* PASSO 2 — Benefícios (empresa) */}
+        {step === 2 && !isProf && (() => {
           const key = getBenefitKey()
           const b = BENEFITS[key]
           return card(<>
             <button onClick={back} style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', fontSize: 13, marginBottom: 16, padding: 0 }}>← Voltar</button>
             <div style={{ background: b.color, borderRadius: 12, padding: '16px', marginBottom: 20, color: '#fff' }}>
-              <div style={{ fontSize: 10, opacity: .8, marginBottom: 4, fontWeight: 600, letterSpacing: '.06em' }}>SEU PACOTE</div>
               <div style={{ fontSize: 17, fontWeight: 600 }}>{b.label}</div>
             </div>
             {b.items.map((item, i) => (
@@ -283,7 +275,7 @@ export default function Cadastro() {
         })()}
 
         {/* SUCESSO */}
-        {((step === 4 && isProf) || (step === 3 && !isProf)) && card(<>
+        {step === 3 && card(<>
           <div style={{ textAlign: 'center', padding: '20px 0' }}>
             <div style={{ width: 64, height: 64, borderRadius: '50%', background: `linear-gradient(135deg,${G},${C})`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 28 }}>✅</div>
             <h2 style={{ fontSize: 22, fontWeight: 700, color: N, marginBottom: 8 }}>Bem-vindo(a), {form.nome.split(' ')[0]}!</h2>
