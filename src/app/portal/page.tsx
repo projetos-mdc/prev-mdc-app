@@ -43,7 +43,7 @@ export default function Portal() {
   const [novaErro, setNovaErro] = useState('')
   const [tipoInd, setTipoInd] = useState<'s1'|'s2'|''>('')
 
-  const isProf = partner?.tipo === 'profissional' ?? false
+  const isProf = partner?.tipo === 'profissional'
   const isEmpresaS2 = !isProf && partner?.segmento === 's2'
 
   const loadIndicacoes = useCallback(async (id: string) => {
@@ -342,3 +342,4 @@ export default function Portal() {
     </div>
   )
 }
+         
