@@ -109,7 +109,7 @@ export default function Cadastro() {
       senha: form.senha,          // Em prod: hash com bcrypt
       tipo: form.tipo,
       especialidade: form.especialidade,
-      segmento: isProf ? 'profissional' : getBenefitKey(),
+      segmento: isProf ? 's1' : getBenefitKey(),
       status: 'ativo',
     })
     setLoading(false)
@@ -233,7 +233,7 @@ export default function Cadastro() {
           <p style={{ fontSize: 13, color: '#64748B', marginBottom: 16 }}>Você escolhe o modelo na hora de indicar cada paciente. Veja as opções disponíveis:</p>
           {[
             {color:G, icon:'🏠', t:'Consultoria em Domicílio', d:'Vamos até a casa do paciente e oferecemos uma consultoria completa de orientação de higiene bucal para treinamento do familiar e cuidadores.'},
-            {color:S, icon:'💰', t:'Avaliação em Parceria', tag:'R$ 150 por indicação avaliada', d:'Fazemos a avaliação e tratamento com um acompanhamento mútuo do paciente (o paciente ganha o Kit de Higiene Bucal).'},
+            {color:S, icon:'💰', t:'Avaliação em Parceria', d:'Fazemos a avaliação e tratamento com um acompanhamento mútuo do paciente (o paciente ganha o Kit de Higiene Bucal).'},
           ].map((opt, i) => (
             <div key={i} style={{
               marginBottom: 12, border: `1.5px solid ${opt.color}40`,
