@@ -242,7 +242,6 @@ export default function Cadastro() {
               <div style={{ padding: '11px 16px', borderBottom: `1px solid ${opt.color}40`, display: 'flex', alignItems: 'center', gap: 8, background: opt.color + '12' }}>
                 <span style={{ fontSize: 18 }}>{opt.icon}</span>
                 <span style={{ fontSize: 13, fontWeight: 600, color: opt.color }}>{opt.t}</span>
-                {opt.tag && <span style={{ marginLeft: 'auto', padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: opt.color + '20', color: opt.color }}>{opt.tag}</span>}
               </div>
               <p style={{ padding: '10px 16px', fontSize: 12, color: '#64748B', margin: 0, lineHeight: 1.6 }}>{opt.d}</p>
             </div>
