@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
@@ -82,11 +82,19 @@ export default function Cadastro() {
   const [step, setStep] = useState(0)
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
+  const [unidades, setUnidades] = useState<{id:string,nome:string}[]>([])
+
+  useEffect(() => {
+    supabase.from('unidades').select('id, nome').order('nome').then(({ data }) => {
+      if (data) setUnidades(data)
+    })
+  }, [])
 
   const [form, setForm] = useState({
     nome: '', email: '', whatsapp: '', senha: '',
     tipo: '' as 'profissional' | 'empresa' | '',
     especialidade: '', segmento: '', escolha: '' as BenefitKey | '',
+    unidade_id: '',
   })
 
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }))
@@ -111,6 +119,7 @@ export default function Cadastro() {
       especialidade: form.especialidade,
       segmento: isProf ? 's1' : getBenefitKey(),
       status: 'ativo',
+      unidade_id: form.unidade_id || null,
     })
     setLoading(false)
     if (error) {
@@ -207,8 +216,19 @@ export default function Cadastro() {
               })}
             </div>
           </div>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 5 }}>Unidade MDC</label>
+            <select
+              value={form.unidade_id}
+              onChange={e => set('unidade_id', e.target.value)}
+              style={{ width: '100%', padding: '10px 13px', borderRadius: 10, border: '1.5px solid #CBD5E1', fontSize: 14, color: form.unidade_id ? N : '#94A3B8', outline: 'none', background: '#fff' }}
+            >
+              <option value="">Selecione sua unidade</option>
+              {unidades.map(u => <option key={u.id} value={u.id}>{u.nome}</option>)}
+            </select>
+          </div>
           {btn('Continuar →', () => {
-            if (!form.nome || !form.email || !form.senha || !form.tipo) { setErro('Preencha todos os campos.'); return }
+            if (!form.nome || !form.email || !form.senha || !form.tipo || !form.unidade_id) { setErro('Preencha todos os campos e selecione sua unidade.'); return }
             setErro(''); setStep(1)
           })}
           {erro && <p style={{ color: '#EF4444', fontSize: 13, marginTop: 8 }}>{erro}</p>}

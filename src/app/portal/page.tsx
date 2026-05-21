@@ -19,7 +19,7 @@ const STATUS_CFG: Record<string, {label:string, color:string, bg:string}> = {
 
 type Partner = {
   id: string; nome: string; email: string; tipo: string;
-  especialidade: string; segmento: string;
+  especialidade: string; segmento: string; unidade_id: string | null;
 }
 
 type Indicacao = {
@@ -68,6 +68,7 @@ export default function Portal() {
     setNovaSaving(true); setNovaErro('')
     const { error } = await supabase.from('indicacoes').insert({
       parceiro_id: partner!.id,
+      unidade_id: partner!.unidade_id,
       paciente_nome: novaForm.nome.trim(),
       paciente_telefone: novaForm.telefone.trim(),
       observacoes: novaForm.obs.trim(),
