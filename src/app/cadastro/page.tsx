@@ -183,7 +183,7 @@ export default function Cadastro() {
     <div style={{ minHeight: '100vh', background: '#F1F5F9', padding: '24px 16px' }}>
       {/* Header */}
       <div style={{ maxWidth: 500, margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href="/" style={{ fontSize: 14, fontWeight: 600, color: N, textDecoration: 'none' }}>🦷 MDC</Link>
+        <Link href="/"><img src="/logo-mdc.png" alt="MDC" style={{ height: 28 }} /></Link>
         <Link href="/login" style={{ fontSize: 13, color: '#64748B', textDecoration: 'none' }}>Já tenho conta →</Link>
       </div>
 

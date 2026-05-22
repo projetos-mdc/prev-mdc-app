@@ -111,7 +111,7 @@ export default function GestorDashboard() {
       <header style={{ background: N, padding: '0 20px' }}>
         <div style={{ maxWidth: 1000, margin: '0 auto', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display:'flex', alignItems:'center', gap: 10 }}>
-            <div style={{ width:34, height:34, borderRadius:9, background:G, display:'flex', alignItems:'center', justifyContent:'center', fontSize:16 }}>🦷</div>
+            <img src="/logo-mdc.png" alt="MDC" style={{ height:32, filter:'brightness(0) invert(1)' }} />
             <div>
               <div style={{ color:'#fff', fontSize:13, fontWeight:600 }}>Painel do Gestor</div>
               <div style={{ color:C, fontSize:11 }}>{unidadeNome}</div>
