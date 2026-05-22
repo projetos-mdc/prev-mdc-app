@@ -67,4 +67,6 @@ export default function Home() {
         <Link href="/login" style={{border:'1px solid #2F6C82',color:'#B0E8E6',padding:'7px 18px',borderRadius:8,fontSize:13,textDecoration:'none'}}>Já sou parceiro — Fazer login</Link>
         <p style={{color:'#475569',fontSize:11,marginTop:16}}>© 2026 Meu Dentista em Casa</p>
       </footer>
-    </div
+    </div>
+  )
+}
