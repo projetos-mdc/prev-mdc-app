@@ -14,7 +14,7 @@ export default function Home() {
     <div style={{fontFamily:"'DM Sans',sans-serif",background:'#fff',minHeight:'100vh'}}>
       <section style={{background:`linear-gradient(135deg,${N} 0%,${T} 100%)`,padding:'64px 24px',textAlign:'center',position:'relative',overflow:'hidden'}}>
         <div style={{position:'relative',zIndex:1,maxWidth:600,margin:'0 auto'}}>
-          <span style={{display:'inline-block',background:C+'28',border:`1px solid ${C}55`,color:C,padding:'8px 20px',borderRadius:20,fontSize:16,fontWeight:600,letterSpacing:'0.01em',marginBottom:18}}>Programa de Parcerias na Assistência Domiciliar</span>
+          <span style={{display:'inline-block',background:C+'28',border:`1px solid ${C}55`,color:C,padding:'5px 16px',borderRadius:20,fontSize:12,fontWeight:600,letterSpacing:'0.08em',marginBottom:18,textTransform:'uppercase'}}>Programa Prev MDC</span>
           <h1 style={{fontSize:'clamp(26px,5vw,44px)',color:'#fff',lineHeight:1.15,marginBottom:14,fontWeight:700}}>Odontologia domiciliar<br/><span style={{color:C}}>onde o paciente está.</span></h1>
           <p style={{color:'#B0E8E6',fontSize:13,lineHeight:1.7,marginBottom:32,maxWidth:460,margin:'0 auto 32px'}}>Levando o cuidado para todos os pacientes em todos os lugares</p>
           <Link href="/cadastro" style={{display:'inline-block',background:G,color:'#fff',padding:'13px 32px',borderRadius:10,fontWeight:600,fontSize:15,textDecoration:'none'}}>Quero ser parceiro →</Link>
