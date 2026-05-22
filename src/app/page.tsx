@@ -62,7 +62,7 @@ export default function Home() {
         <Link href="/cadastro" style={{display:'block',background:G,color:'#fff',padding:13,borderRadius:10,fontWeight:600,fontSize:15,textDecoration:'none',textAlign:'center'}}>Descobrir meu benefício →</Link>
       </section>
       <footer style={{padding:'32px 24px',marginTop:32,background:N,textAlign:'center'}}>
-        <p style={{color:'#fff',fontWeight:600,marginBottom:6}}>🦷 Meu Dentista em Casa</p>
+        <img src="/logo-mdc.png" alt="Meu Dentista em Casa" style={{height:40,filter:'brightness(0) invert(1)',marginBottom:8}} />
         <p style={{color:'#94A3B8',fontSize:12,marginBottom:14}}>Levando o cuidado odontológico a todos os lugares.</p>
         <Link href="/login" style={{border:'1px solid #2F6C82',color:'#B0E8E6',padding:'7px 18px',borderRadius:8,fontSize:13,textDecoration:'none'}}>Já sou parceiro — Fazer login</Link>
         <p style={{color:'#475569',fontSize:11,marginTop:16}}>© 2026 Meu Dentista em Casa</p>
