@@ -56,13 +56,6 @@ export default function Login() {
           fontWeight: 600, fontSize: 14, cursor: loading ? 'not-allowed' : 'pointer', marginBottom: 14,
         }}>{loading ? 'Entrando...' : 'Entrar no portal'}</button>
 
-        <p style={{ textAlign: 'center', fontSize: 12, color: '#94A3B8' }}>
-          Ainda não é parceiro?{' '}
-          <Link href="/cadastro" style={{ color: G, fontWeight: 600, textDecoration: 'none' }}>Fazer cadastro</Link>
-        </p>
-        <p style={{ textAlign: 'center', marginTop: 8 }}>
-          <Link href="/" style={{ fontSize: 12, color: '#94A3B8', textDecoration: 'none' }}>← Voltar ao site</Link>
-        </p>
       </div>
     </div>
   )
