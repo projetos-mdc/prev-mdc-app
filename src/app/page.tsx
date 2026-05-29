@@ -4,12 +4,6 @@ import Link from 'next/link'
 const G='#069E6E',N='#2D2E47',C='#00BAB4',S='#3E7996',T='#2F6C82'
 
 export default function Home() {
-  const segs=[
-    {icon:'🩺',label:'Geriatras & Médicos',color:G},
-    {icon:'🗣️',label:'Fonoaudiólogos',color:S},
-    {icon:'🏃',label:'Fisioterapeutas',color:T},
-    {icon:'💉',label:'Enfermeiros & Técnicos',color:C},
-  ]
   return (
     <div style={{fontFamily:"'DM Sans',sans-serif",background:'#fff',minHeight:'100vh'}}>
       <section style={{background:`linear-gradient(135deg,${N} 0%,${T} 100%)`,padding:'64px 24px',textAlign:'center',position:'relative',overflow:'hidden'}}>
@@ -55,9 +49,21 @@ export default function Home() {
         </div>
       </section>
       <section style={{padding:'32px 24px 0',maxWidth:800,margin:'0 auto'}}>
-        <p style={{fontSize:11,fontWeight:600,color:'#94A3B8',letterSpacing:'.07em',textTransform:'uppercase',marginBottom:12}}>Feito para profissionais de saúde</p>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:10,marginBottom:20}}>
-          {segs.map(s=>(<div key={s.label} style={{background:s.color,borderRadius:12,padding:'20px 16px',color:'#fff',textAlign:'center'}}><div style={{fontSize:28,marginBottom:6}}>{s.icon}</div><div style={{fontSize:13,fontWeight:500}}>{s.label}</div></div>))}
+        <p style={{fontSize:11,fontWeight:600,color:'#94A3B8',letterSpacing:'.07em',textTransform:'uppercase',marginBottom:20}}>O que cada um ganha com o Programa Prev MDC</p>
+        <div style={{display:'flex',flexDirection:'column',gap:16,marginBottom:24}}>
+          {[
+            {icon:'👩‍⚕️', title:'Para o profissional de saúde', color:G, text:'Uma forma simples de ampliar o cuidado que você já oferece. Ao indicar um paciente para o programa, você garante que ele terá acesso a uma consultoria odontológica completa em casa — com orientação à família e treinamento do cuidador. Seu paciente é melhor cuidado, e você se diferencia como profissional que pensa no cuidado integral.'},
+            {icon:'👨‍👩‍👧', title:'Para a família', color:T, text:'A certeza de que o paciente está sendo bem cuidado também na saúde bucal. A família recebe uma consultoria presencial com o dentista MDC, e o cuidador passa por um treinamento prático de higiene bucal — garantindo que o cuidado continue todos os dias, com segurança e confiança.'},
+            {icon:'🛏️', title:'Para o paciente', color:S, text:'Atendimento odontológico humanizado, no conforto do seu ambiente, com avaliação clínica, orientação personalizada e acompanhamento contínuo do tratamento. Um dentista que conhece seu histórico e está presente em cada etapa do cuidado.'},
+          ].map(item=>(
+            <div key={item.title} style={{background:'#fff',border:`1.5px solid ${item.color}30`,borderRadius:14,padding:'20px 20px',display:'flex',gap:16,alignItems:'flex-start'}}>
+              <div style={{width:44,height:44,borderRadius:12,background:item.color,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0}}>{item.icon}</div>
+              <div>
+                <div style={{fontSize:14,fontWeight:700,color:N,marginBottom:6}}>{item.title}</div>
+                <div style={{fontSize:13,color:'#475569',lineHeight:1.7}}>{item.text}</div>
+              </div>
+            </div>
+          ))}
         </div>
         <Link href="/cadastro" style={{display:'block',background:G,color:'#fff',padding:13,borderRadius:10,fontWeight:600,fontSize:15,textDecoration:'none',textAlign:'center'}}>Quero ser parceiro →</Link>
       </section>
