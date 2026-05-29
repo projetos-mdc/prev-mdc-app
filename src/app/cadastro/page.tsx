@@ -20,50 +20,6 @@ const PROF_SEGS = [
   {val:'outro',       label:'Outro profissional de saúde', icon:'👩‍⚕️'},
 ]
 
-const EMP_SEGS = [
-  {val:'homecare', label:'Empresa de Home Care',              icon:'🏠', seg:'s3'},
-  {val:'agencia',  label:'Agência de Cuidadores',             icon:'👥', seg:'s3'},
-  {val:'ilpi',     label:'ILPI / Longa Permanência',          icon:'🏛️', seg:'s4'},
-  {val:'clinica',  label:'Clínica de Internação / Transição', icon:'🏥', seg:'s4'},
-]
-
-const BENEFITS = {
-  s1: {
-    color: G, label: 'Consultoria em Domicílio',
-    items: [
-      {icon:'🦷', t:'Kit de Higiene Bucal KIN', d:'Enxaguante + pasta dental entregues ao seu paciente como benefício da parceria.'},
-      {icon:'🩺', t:'Consultoria In Loco', d:'Nosso dentista vai até a residência do paciente, avalia e orienta o cuidador e a família.'},
-      {icon:'📋', t:'Relatório personalizado', d:'Você recebe um relatório do status bucal do paciente após cada visita.'},
-    ],
-  },
-  s2: {
-    color: S, label: 'Avaliação em Parceria',
-    items: [
-      {icon:'💰', t:'R$ 150 por avaliação realizada', d:'Você indica o paciente, nosso dentista avalia e você recebe R$ 150 automaticamente.'},
-      {icon:'📲', t:'Indicação simples pelo portal', d:'Registre nome e contato do paciente no seu portal. Nós cuidamos do resto.'},
-      {icon:'📊', t:'Painel de acompanhamento', d:'Veja em tempo real o status de cada paciente e o valor acumulado a receber.'},
-    ],
-  },
-  s3: {
-    color: T, label: 'Pacote Home Care',
-    items: [
-      {icon:'🎓', t:'Curso Online com Certificação', d:'Treinamento completo para cuidadores com material didático e certificado ao final.'},
-      {icon:'🩺', t:'Consultoria In Loco', d:'Dentista MDC visita e orienta sua equipe sobre as necessidades de cada paciente.'},
-      {icon:'📋', t:'Relatório de demanda', d:'Mapeamento completo das necessidades odontológicas dos seus pacientes.'},
-    ],
-  },
-  s4: {
-    color: C, label: 'Pacote ILPI / Instituição',
-    items: [
-      {icon:'🔍', t:'Avaliações Gratuitas', d:'Triagem geral, avaliação de demanda semanal e avaliação de admissão — tudo incluso.'},
-      {icon:'🎓', t:'Curso com Certificação', d:'Capacitação completa para toda a equipe de cuidadores e técnicos da instituição.'},
-      {icon:'👐', t:'Educação na Prática', d:'Treinamento presencial com o dentista MDC diretamente com os residentes.'},
-    ],
-  },
-}
-
-type BenefitKey = keyof typeof BENEFITS
-
 function Prog({ step, total }: { step: number; total: number }) {
   return (
     <div style={{ display: 'flex', gap: 5, marginBottom: 20 }}>
@@ -92,20 +48,11 @@ export default function Cadastro() {
 
   const [form, setForm] = useState({
     nome: '', email: '', whatsapp: '', senha: '',
-    tipo: '' as 'profissional' | 'empresa' | '',
-    especialidade: '', segmento: '', escolha: '' as BenefitKey | '',
-    unidade_id: '',
+    especialidade: '', unidade_id: '',
   })
 
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }))
-
-  const isProf = form.tipo === 'profissional'
   const total = 4
-
-  const getBenefitKey = (): BenefitKey => {
-    const found = EMP_SEGS.find(s => s.val === form.especialidade)
-    return (found?.seg || 's3') as BenefitKey
-  }
 
   async function finalizar() {
     setLoading(true)
@@ -114,10 +61,10 @@ export default function Cadastro() {
       nome: form.nome.trim(),
       email: form.email.toLowerCase().trim(),
       whatsapp: form.whatsapp.trim(),
-      senha: form.senha,          // Em prod: hash com bcrypt
-      tipo: form.tipo,
+      senha: form.senha,
+      tipo: 'profissional',
       especialidade: form.especialidade,
-      segmento: isProf ? 's1' : getBenefitKey(),
+      segmento: 's1',
       status: 'ativo',
       unidade_id: form.unidade_id || null,
     })
@@ -127,7 +74,7 @@ export default function Cadastro() {
       else setErro('Erro ao salvar. Tente novamente.')
       return
     }
-    setStep(step + 1) // sucesso
+    setStep(step + 1)
   }
 
   const inp = (label: string, key: string, type = 'text', ph = '') => (
@@ -181,7 +128,6 @@ export default function Cadastro() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#F1F5F9', padding: '24px 16px' }}>
-      {/* Header */}
       <div style={{ maxWidth: 500, margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Link href="/"><img src="/logo-mdc.png" alt="MDC" style={{ height: 28 }} /></Link>
         <Link href="/login" style={{ fontSize: 13, color: '#64748B', textDecoration: 'none' }}>Já tenho conta →</Link>
@@ -193,29 +139,11 @@ export default function Cadastro() {
         {/* PASSO 0 — Dados básicos */}
         {step === 0 && card(<>
           <h2 style={{ fontSize: 20, fontWeight: 700, color: N, marginBottom: 4 }}>Vamos começar</h2>
-          <p style={{ fontSize: 13, color: '#64748B', marginBottom: 20 }}>Preencha seus dados para receber sua proposta.</p>
+          <p style={{ fontSize: 13, color: '#64748B', marginBottom: 20 }}>Preencha seus dados para criar sua conta de parceiro.</p>
           {inp('Nome completo', 'nome', 'text', 'Seu nome')}
           {inp('E-mail', 'email', 'email', 'seu@email.com')}
           {inp('WhatsApp', 'whatsapp', 'tel', '(61) 99999-9999')}
           {inp('Senha de acesso', 'senha', 'password', 'Mínimo 6 caracteres')}
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 8 }}>Você é:</label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              {[{val:'profissional',label:'Profissional de saúde',icon:'👩‍⚕️'},{val:'empresa',label:'Empresa / Instituição',icon:'🏢'}].map(t => {
-                const sel = form.tipo === t.val
-                return (
-                  <button key={t.val} onClick={() => set('tipo', t.val)} style={{
-                    padding: '16px 10px', borderRadius: 12, cursor: 'pointer', textAlign: 'center',
-                    border: `1.5px solid ${sel ? G : '#CBD5E1'}`,
-                    background: sel ? '#E4F5F3' : '#fff',
-                  }}>
-                    <div style={{ fontSize: 26, marginBottom: 6 }}>{t.icon}</div>
-                    <div style={{ fontSize: 12, fontWeight: sel ? 600 : 400, color: sel ? N : '#475569' }}>{t.label}</div>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
           <div style={{ marginBottom: 16 }}>
             <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 5 }}>Unidade MDC</label>
             <select
@@ -228,26 +156,24 @@ export default function Cadastro() {
             </select>
           </div>
           {btn('Continuar →', () => {
-            if (!form.nome || !form.email || !form.senha || !form.tipo || !form.unidade_id) { setErro('Preencha todos os campos e selecione sua unidade.'); return }
+            if (!form.nome || !form.email || !form.senha || !form.unidade_id) { setErro('Preencha todos os campos e selecione sua unidade.'); return }
             setErro(''); setStep(1)
           })}
           {erro && <p style={{ color: '#EF4444', fontSize: 13, marginTop: 8 }}>{erro}</p>}
         </>)}
 
-        {/* PASSO 1 — Especialidade / Segmento */}
+        {/* PASSO 1 — Especialidade */}
         {step === 1 && card(<>
           <button onClick={back} style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', fontSize: 13, marginBottom: 16, padding: 0 }}>← Voltar</button>
-          <h2 style={{ fontSize: 20, fontWeight: 700, color: N, marginBottom: 4 }}>{isProf ? 'Qual é a sua especialidade?' : 'Qual tipo de empresa?'}</h2>
-          <p style={{ fontSize: 13, color: '#64748B', marginBottom: 16 }}>
-            {isProf ? 'Fonoaudiólogos, fisioterapeutas, nutricionistas e outros profissionais de saúde são bem-vindos.' : 'Escolha o tipo que melhor descreve sua empresa.'}
-          </p>
-          {(isProf ? PROF_SEGS : EMP_SEGS).map(s => optBtn(s.val, s.label, s.icon, form.especialidade, v => set('especialidade', v)))}
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: N, marginBottom: 4 }}>Qual é a sua especialidade?</h2>
+          <p style={{ fontSize: 13, color: '#64748B', marginBottom: 16 }}>Fonoaudiólogos, fisioterapeutas, nutricionistas e outros profissionais de saúde são bem-vindos.</p>
+          {PROF_SEGS.map(s => optBtn(s.val, s.label, s.icon, form.especialidade, v => set('especialidade', v)))}
           {btn('Continuar →', () => { if (!form.especialidade) { setErro('Selecione uma opção.'); return }; setErro(''); setStep(2) })}
           {erro && <p style={{ color: '#EF4444', fontSize: 13, marginTop: 8 }}>{erro}</p>}
         </>)}
 
-        {/* PASSO 2 — Info dos modelos disponíveis (profissional) */}
-        {step === 2 && isProf && card(<>
+        {/* PASSO 2 — Info dos modelos */}
+        {step === 2 && card(<>
           <button onClick={back} style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', fontSize: 13, marginBottom: 16, padding: 0 }}>← Voltar</button>
           <h2 style={{ fontSize: 20, fontWeight: 700, color: N, marginBottom: 4 }}>Como funciona sua parceria</h2>
           <p style={{ fontSize: 13, color: '#64748B', marginBottom: 16 }}>Você escolhe o modelo na hora de indicar cada paciente. Veja as opções disponíveis:</p>
@@ -269,29 +195,6 @@ export default function Cadastro() {
           {erro && <p style={{ color: '#EF4444', fontSize: 13, marginTop: 12 }}>{erro}</p>}
           {btn(loading ? 'Salvando...' : 'Confirmar parceria →', finalizar, G, loading)}
         </>)}
-
-        {/* PASSO 2 — Benefícios (empresa) */}
-        {step === 2 && !isProf && (() => {
-          const key = getBenefitKey()
-          const b = BENEFITS[key]
-          return card(<>
-            <button onClick={back} style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', fontSize: 13, marginBottom: 16, padding: 0 }}>← Voltar</button>
-            <div style={{ background: b.color, borderRadius: 12, padding: '16px', marginBottom: 20, color: '#fff' }}>
-              <div style={{ fontSize: 17, fontWeight: 600 }}>{b.label}</div>
-            </div>
-            {b.items.map((item, i) => (
-              <div key={i} style={{ display: 'flex', gap: 12, padding: '11px 0', borderBottom: i < b.items.length - 1 ? '1px solid #F1F5F9' : 'none' }}>
-                <span style={{ fontSize: 22, flexShrink: 0 }}>{item.icon}</span>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: N, marginBottom: 2 }}>{item.t}</div>
-                  <div style={{ fontSize: 12, color: '#64748B', lineHeight: 1.6 }}>{item.d}</div>
-                </div>
-              </div>
-            ))}
-            {erro && <p style={{ color: '#EF4444', fontSize: 13, marginTop: 12 }}>{erro}</p>}
-            {btn(loading ? 'Salvando...' : 'Confirmar parceria →', finalizar, b.color, loading)}
-          </>)
-        })()}
 
         {/* SUCESSO */}
         {step === 3 && card(<>

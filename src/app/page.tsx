@@ -6,9 +6,9 @@ const G='#069E6E',N='#2D2E47',C='#00BAB4',S='#3E7996',T='#2F6C82'
 export default function Home() {
   const segs=[
     {icon:'🩺',label:'Geriatras & Médicos',color:G},
-    {icon:'🏥',label:'Profissionais de Saúde',color:S},
-    {icon:'🏠',label:'Home Care & Cuidadores',color:T},
-    {icon:'🏛️',label:'ILPIs & Instituições',color:C},
+    {icon:'🗣️',label:'Fonoaudiólogos',color:S},
+    {icon:'🏃',label:'Fisioterapeutas',color:T},
+    {icon:'💉',label:'Enfermeiros & Técnicos',color:C},
   ]
   return (
     <div style={{fontFamily:"'DM Sans',sans-serif",background:'#fff',minHeight:'100vh'}}>
@@ -55,11 +55,11 @@ export default function Home() {
         </div>
       </section>
       <section style={{padding:'32px 24px 0',maxWidth:800,margin:'0 auto'}}>
-        <p style={{fontSize:11,fontWeight:600,color:'#94A3B8',letterSpacing:'.07em',textTransform:'uppercase',marginBottom:12}}>Uma parceria para cada perfil</p>
+        <p style={{fontSize:11,fontWeight:600,color:'#94A3B8',letterSpacing:'.07em',textTransform:'uppercase',marginBottom:12}}>Feito para profissionais de saúde</p>
         <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:10,marginBottom:20}}>
           {segs.map(s=>(<div key={s.label} style={{background:s.color,borderRadius:12,padding:'20px 16px',color:'#fff',textAlign:'center'}}><div style={{fontSize:28,marginBottom:6}}>{s.icon}</div><div style={{fontSize:13,fontWeight:500}}>{s.label}</div></div>))}
         </div>
-        <Link href="/cadastro" style={{display:'block',background:G,color:'#fff',padding:13,borderRadius:10,fontWeight:600,fontSize:15,textDecoration:'none',textAlign:'center'}}>Descobrir meu benefício →</Link>
+        <Link href="/cadastro" style={{display:'block',background:G,color:'#fff',padding:13,borderRadius:10,fontWeight:600,fontSize:15,textDecoration:'none',textAlign:'center'}}>Quero ser parceiro →</Link>
       </section>
       <footer style={{padding:'32px 24px',marginTop:32,background:N,textAlign:'center'}}>
         <div style={{marginBottom:12}}><img src="/logo-mdc.png" alt="Meu Dentista em Casa" style={{height:40,filter:'brightness(0) invert(1)',display:'inline-block',width:'auto'}} /></div>
