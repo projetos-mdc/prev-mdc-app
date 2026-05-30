@@ -66,7 +66,7 @@ export default function GestorDashboard() {
 
   useEffect(() => {
     const raw = localStorage.getItem('gestor_session')
-    if (!raw) { router.push('/gestor/login'); return }
+    if (!raw) { router.push('/login'); return }
     const g = JSON.parse(raw) as Gestor
     setGestor(g)
     loadData(g).finally(() => setLoading(false))
@@ -86,7 +86,7 @@ export default function GestorDashboard() {
     setPdfModal(null)
   }
 
-  function sair() { localStorage.removeItem('gestor_session'); router.push('/gestor/login') }
+  function sair() { localStorage.removeItem('gestor_session'); router.push('/login') }
 
   if (loading) return (
     <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center' }}>
