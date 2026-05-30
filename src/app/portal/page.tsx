@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { getCurrentPartner, clearCurrentPartner } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
@@ -66,11 +66,24 @@ export default function Portal() {
     setIndicacoes(data || [])
   }, [])
 
+  const [lastUpdated, setLastUpdated] = useState<Date|null>(null)
+  const partnerRef = useRef<Partner|null>(null)
+
   useEffect(() => {
     const p = getCurrentPartner()
     if (!p) { router.push('/login'); return }
     setPartner(p)
-    loadIndicacoes(p.id).finally(() => setLoading(false))
+    partnerRef.current = p
+    loadIndicacoes(p.id).finally(() => { setLoading(false); setLastUpdated(new Date()) })
+
+    // Atualiza status automaticamente a cada 30s
+    const interval = setInterval(async () => {
+      if (partnerRef.current) {
+        await loadIndicacoes(partnerRef.current.id)
+        setLastUpdated(new Date())
+      }
+    }, 30000)
+    return () => clearInterval(interval)
   }, [router, loadIndicacoes])
 
   async function enviarIndicacao() {
@@ -165,6 +178,7 @@ export default function Portal() {
           </div>
           <div style={{ display:'flex', alignItems:'center', gap:12 }}>
             <span style={{ color:'#fff', fontSize:13 }}>{partner.nome}</span>
+            {lastUpdated && <span style={{ color:'#64748B', fontSize:11 }}>↻ {lastUpdated.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span>}
             <button onClick={() => setTab('nova')} style={{ background:G, border:'none', color:'#fff', padding:'6px 14px', borderRadius:7, fontSize:12, fontWeight:600, cursor:'pointer' }}>+ Indicar paciente</button>
             <button onClick={sair} style={{ background:'none', border:'1px solid #2F6C82', color:'#B0E8E6', padding:'5px 12px', borderRadius:7, fontSize:12, cursor:'pointer' }}>Sair</button>
           </div>
@@ -227,7 +241,7 @@ export default function Portal() {
                           <Pie data={statusData} cx="50%" cy="50%" innerRadius={40} outerRadius={75} paddingAngle={3} dataKey="value">
                             {statusData.map((_, i) => <Cell key={i} fill={COLORS[i%COLORS.length]} />)}
                           </Pie>
-                          <Tooltip contentStyle={{ borderRadius:10, border:'none', fontSize:12 }} formatter={(v: number) => [v, 'pacientes']} />
+                          <Tooltip contentStyle={{ borderRadius:10, border:'none', fontSize:12 }} />
                         </PieChart>
                       </ResponsiveContainer>
                       <div style={{ flex:1 }}>
@@ -259,7 +273,7 @@ export default function Portal() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
                     <XAxis dataKey="mes" tick={{ fontSize:11, fill:'#94A3B8' }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize:11, fill:'#94A3B8' }} axisLine={false} tickLine={false} tickFormatter={v=>`R$${v}`} />
-                    <Tooltip contentStyle={{ borderRadius:10, border:'none', fontSize:12 }} formatter={(v:number)=>[`R$ ${v}`,'Repasse']} />
+                    <Tooltip contentStyle={{ borderRadius:10, border:'none', fontSize:12 }} />
                     <Area type="monotone" dataKey="valor" stroke={S} strokeWidth={2.5} fill="url(#repGrad)" name="Repasse" />
                   </AreaChart>
                 </ResponsiveContainer>
