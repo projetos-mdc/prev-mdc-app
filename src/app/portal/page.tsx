@@ -204,11 +204,14 @@ export default function Portal() {
         {tab === 'dashboard' && (
           <div>
             {/* KPIs */}
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12, marginBottom:24 }}>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12, marginBottom:12 }}>
               <KpiCard label="Total de Indicações" value={indicacoes.length} icon="📋" color={N} />
               <KpiCard label="Avaliações Realizadas" value={indicacoes.filter(i=>['avaliado','tratamento','finalizado'].includes(i.status)).length} sub={`${taxaConversao}% de conversão`} icon="✅" color={G} />
-              <KpiCard label="Em Tratamento" value={indicacoes.filter(i=>i.status==='tratamento').length} icon="🦷" color={C} />
               <KpiCard label="A Receber" value={`R$ ${totalRepasse}`} sub="indicações qualificadas" icon="💰" color={S} />
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:12, marginBottom:24 }}>
+              <KpiCard label="Consultoria em Domicílio" value={indicacoes.filter(i=>!i.valor_repasse).length} sub="orientação e treinamento" icon="🏠" color={'#065F46'} />
+              <KpiCard label="Avaliação em Parceria" value={indicacoes.filter(i=>!!i.valor_repasse).length} sub="com repasse de R$ 150" icon="🤝" color={S} />
             </div>
 
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:20 }}>

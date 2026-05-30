@@ -234,11 +234,15 @@ export default function GestorDashboard() {
         {tab === 'dashboard' && (
           <div>
             {/* KPIs */}
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12, marginBottom:24 }}>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12, marginBottom:12 }}>
               <KpiCard label="Total de Parceiros" value={parceiros.length} sub="cadastrados na unidade" color={S} />
               <KpiCard label="Indicações no Período" value={indsFiltradas.length} sub={`de ${indicacoes.length} no total`} color={G} />
               <KpiCard label="Pacientes em Tratamento" value={indicacoes.filter(i=>i.status==='tratamento').length} color={C} />
               <KpiCard label="Finalizados" value={indicacoes.filter(i=>i.status==='finalizado').length} sub="tratamentos concluídos" color={N} />
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:12, marginBottom:24 }}>
+              <KpiCard label="Consultoria em Domicílio" value={indicacoes.filter(i=>!i.valor_repasse).length} sub="orientação e treinamento domiciliar" color={'#065F46'} />
+              <KpiCard label="Avaliação em Parceria" value={indicacoes.filter(i=>!!i.valor_repasse).length} sub="com repasse aos parceiros" color={S} />
             </div>
 
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:20 }}>
