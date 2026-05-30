@@ -20,7 +20,7 @@ const STATUS_CFG: Record<string, {label:string,color:string,bg:string}> = {
   finalizado: {label:'Finalizado',         color:'#4C1D95', bg:'#EDE9FE'},
 }
 
-const TABS = ['dashboard','indicacoes','parceiros'] as const
+const TABS = ['dashboard','indicacoes','parceiros','aprovacoes'] as const
 type Tab = typeof TABS[number]
 
 type Gestor = { id:string; nome:string; email:string; role:string; unidade_id:string; unidades:{nome:string}|null }
@@ -63,6 +63,8 @@ export default function GestorDashboard() {
   const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0]
   const [dataIni, setDataIni] = useState(primeiroDia)
   const [dataFim, setDataFim] = useState(hoje.toISOString().split('T')[0])
+
+  const [aprovando, setAprovando] = useState<string|null>(null)
 
   // PDF modal
   const [pdfModal, setPdfModal] = useState<{id:string, url:string}|null>(null)
@@ -167,6 +169,20 @@ export default function GestorDashboard() {
     setPdfSaving(false); setPdfModal(null)
   }
 
+  async function aprovarParceiro(id: string) {
+    setAprovando(id)
+    await supabase.from('parceiros').update({ status: 'ativo' }).eq('id', id)
+    setParceiros(prev => prev.map(p => p.id===id ? {...p, status:'ativo'} : p))
+    setAprovando(null)
+  }
+
+  async function rejeitarParceiro(id: string) {
+    setAprovando(id)
+    await supabase.from('parceiros').update({ status: 'rejeitado' }).eq('id', id)
+    setParceiros(prev => prev.map(p => p.id===id ? {...p, status:'rejeitado'} : p))
+    setAprovando(null)
+  }
+
   function sair() { localStorage.removeItem('gestor_session'); router.push('/login') }
 
   if (loading) return (
@@ -175,6 +191,8 @@ export default function GestorDashboard() {
     </div>
   )
   if (!gestor) return null
+
+  const pendentes = parceiros.filter(p => p.status === 'pendente')
 
   const unidadeNome = gestor.unidades?.nome || 'Minha Unidade'
 
@@ -208,6 +226,18 @@ export default function GestorDashboard() {
               borderBottom: tab===id ? `2px solid ${G}` : '2px solid transparent',
             }}>{label}</button>
           ))}
+          <button onClick={() => setTab('aprovacoes')} style={{
+            padding:'14px 20px', border:'none', background:'none', cursor:'pointer', fontSize:13, fontWeight:600,
+            color: tab==='aprovacoes' ? G : '#64748B',
+            borderBottom: tab==='aprovacoes' ? `2px solid ${G}` : '2px solid transparent',
+            position:'relative',
+          }}>
+            ✅ Aprovações
+            {pendentes.length > 0 && (
+              <span style={{ position:'absolute', top:8, right:6, background:'#EF4444', color:'#fff', borderRadius:'50%', width:18, height:18, fontSize:10, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center' }}>{pendentes.length}</span>
+            )}
+          </button>
+
         </div>
       </div>
 
@@ -457,6 +487,68 @@ export default function GestorDashboard() {
             ))}
           </div>
         )}
+
+        {/* ════ TAB: APROVAÇÕES ════ */}
+        {tab === 'aprovacoes' && (
+          <div>
+            {pendentes.length === 0 ? (
+              <div style={{ background:'#fff', borderRadius:14, border:'1px solid #E2E8F0', padding:'48px 20px', textAlign:'center' }}>
+                <div style={{ fontSize:32, marginBottom:12 }}>✅</div>
+                <div style={{ fontSize:15, fontWeight:600, color:N, marginBottom:6 }}>Nenhuma aprovação pendente</div>
+                <div style={{ fontSize:13, color:'#94A3B8' }}>Todos os parceiros já foram analisados.</div>
+              </div>
+            ) : (
+              <div>
+                <div style={{ fontSize:13, color:'#92400E', background:'#FEF3C7', border:'1px solid #FCD34D', borderRadius:10, padding:'10px 16px', marginBottom:16 }}>
+                  ⏳ <strong>{pendentes.length} parceiro{pendentes.length>1?'s':''}</strong> aguardando aprovação para acessar o portal.
+                </div>
+                {pendentes.map(p => (
+                  <div key={p.id} style={{ background:'#fff', borderRadius:14, border:'1px solid #E2E8F0', padding:'18px 20px', marginBottom:12, display:'flex', alignItems:'center', gap:16 }}>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:15, fontWeight:700, color:N }}>{p.nome}</div>
+                      <div style={{ fontSize:12, color:'#64748B', marginTop:2 }}>{p.especialidade} · {p.email}</div>
+                      <div style={{ fontSize:12, color:'#94A3B8', marginTop:2 }}>📱 {p.whatsapp} · Cadastro: {new Date(p.data_cadastro).toLocaleDateString('pt-BR')}</div>
+                    </div>
+                    <div style={{ display:'flex', gap:10, flexShrink:0 }}>
+                      <button
+                        onClick={() => rejeitarParceiro(p.id)}
+                        disabled={aprovando===p.id}
+                        style={{ padding:'8px 18px', borderRadius:9, border:'1.5px solid #FCA5A5', background:'#FFF1F1', color:'#EF4444', fontWeight:600, fontSize:13, cursor:'pointer' }}>
+                        ✗ Rejeitar
+                      </button>
+                      <button
+                        onClick={() => aprovarParceiro(p.id)}
+                        disabled={aprovando===p.id}
+                        style={{ padding:'8px 20px', borderRadius:9, border:'none', background:aprovando===p.id?'#CBD5E1':G, color:'#fff', fontWeight:600, fontSize:13, cursor:aprovando===p.id?'not-allowed':'pointer' }}>
+                        {aprovando===p.id ? 'Salvando...' : '✓ Aprovar'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Rejeitados */}
+            {parceiros.filter(p=>p.status==='rejeitado').length > 0 && (
+              <div style={{ marginTop:24 }}>
+                <div style={{ fontSize:12, fontWeight:600, color:'#94A3B8', textTransform:'uppercase', letterSpacing:'.06em', marginBottom:10 }}>Rejeitados</div>
+                {parceiros.filter(p=>p.status==='rejeitado').map(p => (
+                  <div key={p.id} style={{ background:'#fff', borderRadius:12, border:'1px solid #E2E8F0', padding:'14px 18px', marginBottom:8, display:'flex', alignItems:'center', gap:14, opacity:0.7 }}>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:13, fontWeight:600, color:N }}>{p.nome}</div>
+                      <div style={{ fontSize:11, color:'#94A3B8' }}>{p.especialidade} · {p.email}</div>
+                    </div>
+                    <button onClick={() => aprovarParceiro(p.id)} disabled={aprovando===p.id}
+                      style={{ padding:'6px 14px', borderRadius:8, border:`1px solid ${G}`, background:'#E4F5F3', color:G, fontWeight:600, fontSize:12, cursor:'pointer' }}>
+                      Reativar
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
       </main>
 
       {/* MODAL PDF */}

@@ -66,7 +66,7 @@ export default function Cadastro() {
       tipo: 'profissional',
       especialidade: form.especialidade,
       segmento: 's1',
-      status: 'ativo',
+      status: 'pendente',
       unidade_id: form.unidade_id || null,
     })
     setLoading(false)
@@ -200,15 +200,21 @@ export default function Cadastro() {
         {/* SUCESSO */}
         {step === 3 && card(<>
           <div style={{ textAlign: 'center', padding: '20px 0' }}>
-            <div style={{ width: 64, height: 64, borderRadius: '50%', background: `linear-gradient(135deg,${G},${C})`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 28 }}>✅</div>
-            <h2 style={{ fontSize: 22, fontWeight: 700, color: N, marginBottom: 8 }}>Bem-vindo(a), {form.nome.split(' ')[0]}!</h2>
-            <p style={{ fontSize: 14, color: '#64748B', lineHeight: 1.7, marginBottom: 24 }}>
-              Sua parceria com o Meu Dentista em Casa está confirmada.<br />Use seu e-mail e senha para acessar o portal.
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 28 }}>⏳</div>
+            <h2 style={{ fontSize: 22, fontWeight: 700, color: N, marginBottom: 8 }}>Cadastro recebido!</h2>
+            <p style={{ fontSize: 14, color: '#64748B', lineHeight: 1.7, marginBottom: 8 }}>
+              Obrigado, <strong>{form.nome.split(' ')[0]}</strong>! Seu cadastro foi enviado para análise.
             </p>
-            <button onClick={() => router.push('/login')} style={{
-              width: '100%', padding: '13px', borderRadius: 10, border: 'none',
-              background: G, color: '#fff', fontWeight: 600, fontSize: 15, cursor: 'pointer',
-            }}>Acessar o portal →</button>
+            <div style={{ background: '#FEF3C7', border: '1px solid #FCD34D', borderRadius: 12, padding: '14px 16px', marginBottom: 24, textAlign: 'left' }}>
+              <p style={{ fontSize: 13, color: '#92400E', margin: 0, lineHeight: 1.6 }}>
+                🔒 <strong>Aguardando aprovação do gestor.</strong><br />
+                Você receberá acesso ao portal assim que sua conta for aprovada. Em caso de dúvidas, entre em contato com a equipe MDC.
+              </p>
+            </div>
+            <button onClick={() => router.push('/')} style={{
+              width: '100%', padding: '13px', borderRadius: 10, border: '1.5px solid #CBD5E1',
+              background: '#fff', color: '#475569', fontWeight: 600, fontSize: 15, cursor: 'pointer',
+            }}>Voltar ao início</button>
           </div>
         </>)}
       </div>

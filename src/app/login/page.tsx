@@ -34,16 +34,25 @@ export default function Login() {
 
     const emailNorm = email.toLowerCase().trim()
 
-    // 1) Tenta parceiro
+    // 1) Tenta parceiro — verifica status
     const { data: parceiro } = await supabase
       .from('parceiros')
       .select('*')
       .eq('email', emailNorm)
       .eq('senha', senha)
-      .eq('status', 'ativo')
       .single()
 
     if (parceiro) {
+      if (parceiro.status === 'pendente') {
+        setLoading(false)
+        setErro('Sua conta está aguardando aprovação do gestor. Você receberá acesso em breve.')
+        return
+      }
+      if (parceiro.status === 'rejeitado') {
+        setLoading(false)
+        setErro('Seu acesso não foi aprovado. Entre em contato com a equipe MDC.')
+        return
+      }
       localStorage.setItem('mdc_partner', JSON.stringify(parceiro))
       router.push('/portal')
       return
