@@ -60,6 +60,12 @@ export default function Portal() {
   const [novaErro, setNovaErro] = useState('')
   const [tipoInd, setTipoInd] = useState<'s1'|'s2'|''>('')
 
+  // Filtros de data
+  const hoje = new Date()
+  const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0]
+  const [dataIni, setDataIni] = useState(primeiroDia)
+  const [dataFim, setDataFim] = useState(hoje.toISOString().split('T')[0])
+
   const loadIndicacoes = useCallback(async (id: string) => {
     const { data } = await supabase.from('indicacoes').select('*')
       .eq('parceiro_id', id).order('data_indicacao', { ascending: false })
@@ -130,7 +136,7 @@ export default function Portal() {
   })()
 
   const statusData = Object.entries(STATUS_CFG).map(([key,cfg]) => ({
-    name: cfg.label, value: indicacoes.filter(i=>i.status===key).length,
+    name: cfg.label, value: indsFiltradas.filter(i=>i.status===key).length,
     color: cfg.color, icon: cfg.icon,
   })).filter(d => d.value > 0)
 
@@ -149,6 +155,11 @@ export default function Portal() {
       return { mes: meses[parseInt(m)-1]+'/'+y.slice(2), valor: v }
     })
   })()
+
+  const indsFiltradas = indicacoes.filter(i => {
+    const d = i.data_indicacao.split('T')[0]
+    return d >= dataIni && d <= dataFim
+  })
 
   const taxaConversao = indicacoes.length
     ? Math.round(indicacoes.filter(i=>['avaliado','tratamento','finalizado'].includes(i.status)).length / indicacoes.length * 100)
@@ -203,6 +214,20 @@ export default function Portal() {
         {/* ══════════════ DASHBOARD ══════════════ */}
         {tab === 'dashboard' && (
           <div>
+            {/* FILTRO DE DATA */}
+            <div style={{ background:'#fff', borderRadius:12, border:'1px solid #E2E8F0', padding:'12px 18px', marginBottom:18, display:'flex', alignItems:'center', gap:14, flexWrap:'wrap' }}>
+              <span style={{ fontSize:13, fontWeight:600, color:'#475569' }}>Período:</span>
+              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <input type="date" value={dataIni} onChange={e=>setDataIni(e.target.value)}
+                  style={{ padding:'6px 10px', borderRadius:8, border:'1.5px solid #CBD5E1', fontSize:13, color:N, outline:'none' }} />
+                <span style={{ color:'#94A3B8', fontSize:13 }}>até</span>
+                <input type="date" value={dataFim} onChange={e=>setDataFim(e.target.value)}
+                  style={{ padding:'6px 10px', borderRadius:8, border:'1.5px solid #CBD5E1', fontSize:13, color:N, outline:'none' }} />
+              </div>
+              <span style={{ fontSize:12, color:'#94A3B8' }}>
+                {indsFiltradas.length} indicaç{indsFiltradas.length===1?'ão':'ões'} no período
+              </span>
+            </div>
             {/* KPIs */}
             <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12, marginBottom:12 }}>
               <KpiCard label="Total de Indicações" value={indicacoes.length} icon="📋" color={N} />
@@ -356,6 +381,10 @@ export default function Portal() {
                   <div>
                     <div style={{ fontSize:13, fontWeight:600, color:N }}>{ind.paciente_nome}</div>
                     {ind.paciente_telefone && <div style={{ fontSize:11, color:'#94A3B8' }}>{ind.paciente_telefone}</div>}
+                    <span style={{ display:'inline-block', marginTop:4, padding:'2px 8px', borderRadius:20, fontSize:10, fontWeight:600,
+                      background: ind.valor_repasse ? '#EFF6FF' : '#E4F5F3',
+                      color: ind.valor_repasse ? '#1E40AF' : '#065F46'
+                    }}>{ind.valor_repasse ? '🤝 Avaliação em Parceria' : '🏠 Consultoria em Domicílio'}</span>
                   </div>
                   <div style={{ fontSize:12, color:'#64748B' }}>{new Date(ind.data_indicacao).toLocaleDateString('pt-BR')}</div>
                   <div>
