@@ -10,6 +10,7 @@ const G='#069E6E', N='#2D2E47', S='#3E7996', T='#2F6C82', C='#00BAB4'
 
 const PROF_SEGS = [
   {val:'geriatra',    label:'Geriatra / Médico',          icon:'🩺'},
+  {val:'dentista',    label:'Dentista',                   icon:'🦷'},
   {val:'fono',        label:'Fonoaudiólogo(a)',            icon:'🗣️'},
   {val:'enfermeiro',  label:'Enfermeiro(a)',               icon:'💉'},
   {val:'fisio',       label:'Fisioterapeuta',              icon:'🏃'},
