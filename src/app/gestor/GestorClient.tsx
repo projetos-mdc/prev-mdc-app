@@ -403,12 +403,12 @@ export default function GestorDashboard() {
                 {parcsPorMes.length === 0
                   ? <p style={{ color:'#94A3B8', fontSize:13 }}>Sem dados ainda.</p>
                   : <ResponsiveContainer width="100%" height={180}>
-                      <BarChart data={parcsPorMes} barSize={40}>
+                      <BarChart data={parcsPorMes} barCategoryGap="20%" margin={{ left:0, right:0, top:5, bottom:0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                        <XAxis dataKey="mes" tick={{ fontSize:11, fill:'#94A3B8' }} axisLine={false} tickLine={false} />
+                        <XAxis dataKey="mes" tick={{ fontSize:11, fill:'#94A3B8' }} axisLine={false} tickLine={false} padding={{ left:30, right:30 }} />
                         <YAxis tick={{ fontSize:11, fill:'#94A3B8' }} axisLine={false} tickLine={false} allowDecimals={false} />
                         <Tooltip contentStyle={{ borderRadius:10, border:'none', fontSize:12 }} />
-                        <Bar dataKey="total" fill={S} radius={[6,6,0,0]} name="Parceiros" />
+                        <Bar dataKey="total" fill={S} radius={[6,6,0,0]} name="Parceiros" maxBarSize={80} />
                       </BarChart>
                     </ResponsiveContainer>
                 }
