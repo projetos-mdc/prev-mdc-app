@@ -283,9 +283,7 @@ export default function GestorDashboard() {
                 <option key={p.id} value={p.nome}>{p.nome}</option>
               ))}
             </select>
-            <span style={{ fontSize:12, color:'#94A3B8' }}>
-              {indsFiltradas.length} indicaç{indsFiltradas.length === 1 ? 'ão' : 'ões'}
-            </span>
+
           </div>
         )}
 
@@ -299,10 +297,7 @@ export default function GestorDashboard() {
               <KpiCard label="Pacientes em Tratamento" value={indicacoes.filter(i=>i.status==='tratamento').length} color={C} />
               <KpiCard label="Finalizados" value={indicacoes.filter(i=>i.status==='finalizado').length} sub="tratamentos concluídos" color={N} />
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:12, marginBottom:24 }}>
-              <KpiCard label="Consultoria em Domicílio" value={indicacoes.filter(i=>!i.valor_repasse).length} sub="orientação e treinamento domiciliar" color={'#065F46'} />
-              <KpiCard label="Avaliação em Parceria" value={indicacoes.filter(i=>!!i.valor_repasse).length} sub="com repasse aos parceiros" color={S} />
-            </div>
+
 
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:20 }}>
 
