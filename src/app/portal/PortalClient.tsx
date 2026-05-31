@@ -112,6 +112,11 @@ export default function Portal() {
   function sair() { clearCurrentPartner(); router.push('/login') }
 
   // ── dados calculados ──
+  const indsFiltradas = indicacoes.filter(i => {
+    const d = i.data_indicacao.split('T')[0]
+    return d >= dataIni && d <= dataFim
+  })
+
   const totalPontos = indicacoes
     .filter(i => i.valor_repasse && ['avaliado','tratamento','finalizado'].includes(i.status))
     .reduce((sum, i) => sum + (i.valor_repasse||0), 0)
@@ -150,11 +155,6 @@ export default function Portal() {
       return { mes: meses[parseInt(m)-1]+'/'+y.slice(2), valor: v }
     })
   })()
-
-  const indsFiltradas = indicacoes.filter(i => {
-    const d = i.data_indicacao.split('T')[0]
-    return d >= dataIni && d <= dataFim
-  })
 
   const taxaConversao = indicacoes.length
     ? Math.round(indicacoes.filter(i=>['avaliado','tratamento','finalizado'].includes(i.status)).length / indicacoes.length * 100)
