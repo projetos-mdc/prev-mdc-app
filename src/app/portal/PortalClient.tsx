@@ -1,13 +1,12 @@
 'use client'
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { getCurrentPartner, clearCurrentPartner } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
-import nextDynamic from 'next/dynamic'
-
-const IndsPorMesChart = nextDynamic(() => import('@/components/PortalCharts').then(m => ({ default: m.IndsPorMesChart })), { ssr: false })
-const StatusPieChart = nextDynamic(() => import('@/components/PortalCharts').then(m => ({ default: m.StatusPieChart })), { ssr: false })
-const RepasseAreaChart = nextDynamic(() => import('@/components/PortalCharts').then(m => ({ default: m.RepasseAreaChart })), { ssr: false })
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, AreaChart, Area
+} from 'recharts'
 
 const G='#069E6E', N='#2D2E47', S='#3E7996', C='#00BAB4'
 const COLORS = [G, S, C, '#F59E0B', '#8B5CF6', '#EF4444']
@@ -48,7 +47,6 @@ function KpiCard({ label, value, sub, color, icon }: { label:string; value:strin
 export default function Portal() {
   const router = useRouter()
   const [partner, setPartner] = useState<Partner|null>(null)
-  const [mounted, setMounted] = useState(false)
   const [indicacoes, setIndicacoes] = useState<Indicacao[]>([])
   const [tab, setTab] = useState<Tab>('dashboard')
   const [loading, setLoading] = useState(true)
@@ -72,19 +70,17 @@ export default function Portal() {
   }, [])
 
   const [lastUpdated, setLastUpdated] = useState<Date|null>(null)
-  const partnerRef = useRef<Partner|null>(null)
 
   useEffect(() => {
     const p = getCurrentPartner()
     if (!p) { router.push('/login'); return }
     setPartner(p)
-    partnerRef.current = p
-    loadIndicacoes(p.id).finally(() => { setLoading(false); setLastUpdated(new Date()); setMounted(true) })
+    loadIndicacoes(p.id).finally(() => { setLoading(false); setLastUpdated(new Date()) })
 
     // Atualiza status automaticamente a cada 30s
     const interval = setInterval(async () => {
-      if (partnerRef.current) {
-        await loadIndicacoes(partnerRef.current.id)
+      if (partner) {
+        await loadIndicacoes(partner.id)
         setLastUpdated(new Date())
       }
     }, 30000)
@@ -116,7 +112,7 @@ export default function Portal() {
   function sair() { clearCurrentPartner(); router.push('/login') }
 
   // ── dados calculados ──
-  const totalRepasse = indicacoes
+  const totalPontos = indicacoes
     .filter(i => i.valor_repasse && ['avaliado','tratamento','finalizado'].includes(i.status))
     .reduce((sum, i) => sum + (i.valor_repasse||0), 0)
 
@@ -231,7 +227,7 @@ export default function Portal() {
             <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12, marginBottom:12 }}>
               <KpiCard label="Total de Indicações" value={indicacoes.length} icon="📋" color={N} />
               <KpiCard label="Avaliações Realizadas" value={indicacoes.filter(i=>['avaliado','tratamento','finalizado'].includes(i.status)).length} sub={`${taxaConversao}% de conversão`} icon="✅" color={G} />
-              <KpiCard label="A Receber" value={`R$ ${totalRepasse}`} sub="indicações qualificadas" icon="💰" color={S} />
+              <KpiCard label="Pontos Acumulados" value={`${totalPontos} pts`} sub="pontos acumulados" icon="🏅" color={S} />
             </div>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:12, marginBottom:24 }}>
               <KpiCard label="Consultoria em Domicílio" value={indicacoes.filter(i=>!i.valor_repasse).length} sub="orientação e treinamento" icon="🏠" color={'#065F46'} />
@@ -245,7 +241,15 @@ export default function Portal() {
                 <div style={{ fontSize:13, fontWeight:700, color:'#475569', textTransform:'uppercase', letterSpacing:'.06em', marginBottom:14 }}>Minhas indicações por mês</div>
                 {indsPorMes.length === 0
                   ? <p style={{ color:'#94A3B8', fontSize:13, textAlign:'center', padding:'30px 0' }}>Sem indicações ainda. <button onClick={()=>setTab('nova')} style={{ color:G, background:'none', border:'none', cursor:'pointer', fontWeight:600 }}>Faça a primeira →</button></p>
-                  : <IndsPorMesChart data={indsPorMes} />
+                  : <ResponsiveContainer width="100%" height={200}>
+                      <BarChart data={indsPorMes} barSize={28}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+                        <XAxis dataKey="mes" tick={{ fontSize:11, fill:'#94A3B8' }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fontSize:11, fill:'#94A3B8' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                        <Tooltip contentStyle={{ borderRadius:10, border:'none', fontSize:12 }} />
+                        <Bar dataKey="total" fill={G} radius={[6,6,0,0]} name="Indicações" />
+                      </BarChart>
+                    </ResponsiveContainer>
                 }
               </div>
 
@@ -255,7 +259,14 @@ export default function Portal() {
                 {statusData.length === 0
                   ? <p style={{ color:'#94A3B8', fontSize:13, textAlign:'center', padding:'30px 0' }}>Sem dados ainda.</p>
                   : <div style={{ display:'flex', alignItems:'center', gap:16 }}>
-                      <StatusPieChart data={statusData} />
+                      <ResponsiveContainer width="50%" height={180}>
+                        <PieChart>
+                          <Pie data={statusData} cx="50%" cy="50%" innerRadius={40} outerRadius={75} paddingAngle={3} dataKey="value">
+                            {statusData.map((_, i) => <Cell key={i} fill={COLORS[i%COLORS.length]} />)}
+                          </Pie>
+                          <Tooltip contentStyle={{ borderRadius:10, border:'none', fontSize:12 }} />
+                        </PieChart>
+                      </ResponsiveContainer>
                       <div style={{ flex:1 }}>
                         {statusData.map((d,i) => (
                           <div key={d.name} style={{ display:'flex', alignItems:'center', gap:7, marginBottom:8 }}>
@@ -274,7 +285,21 @@ export default function Portal() {
             {repassePorMes.length > 0 && (
               <div style={{ background:'#fff', borderRadius:14, border:'1px solid #E2E8F0', padding:'20px', marginBottom:20 }}>
                 <div style={{ fontSize:13, fontWeight:700, color:'#475569', textTransform:'uppercase', letterSpacing:'.06em', marginBottom:14 }}>Repasse financeiro por mês (R$)</div>
-                <RepasseAreaChart data={repassePorMes} />
+                <ResponsiveContainer width="100%" height={180}>
+                  <AreaChart data={repassePorMes}>
+                    <defs>
+                      <linearGradient id="repGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={S} stopOpacity={0.2}/>
+                        <stop offset="95%" stopColor={S} stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+                    <XAxis dataKey="mes" tick={{ fontSize:11, fill:'#94A3B8' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize:11, fill:'#94A3B8' }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ borderRadius:10, border:'none', fontSize:12 }} />
+                    <Area type="monotone" dataKey="valor" stroke={S} strokeWidth={2.5} fill="url(#repGrad)" name="Repasse" />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
             )}
 
@@ -428,7 +453,7 @@ export default function Portal() {
 
             {tipoInd==='s2' && (
               <div style={{ background:'#EFF6FF', border:'1px solid #BFDBFE', borderRadius:10, padding:'10px 14px', marginBottom:16, fontSize:13, color:'#1E40AF' }}>
-                💰 Você receberá <strong>R$ 150</strong> após a avaliação ser realizada.
+                🏅 Você acumulará <strong>150 pontos</strong> após a avaliação ser realizada.
               </div>
             )}
 
@@ -471,7 +496,7 @@ export default function Portal() {
                   <div style={{ fontSize:11, color:'#64748B' }}>Conversão</div>
                 </div>
                 <div style={{ textAlign:'center' }}>
-                  <div style={{ fontSize:22, fontWeight:800, color:S }}>R$ {totalRepasse}</div>
+                  <div style={{ fontSize:22, fontWeight:800, color:S }}>{totalPontos} pts</div>
                   <div style={{ fontSize:11, color:'#64748B' }}>A receber</div>
                 </div>
               </div>

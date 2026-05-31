@@ -314,6 +314,36 @@ export default function GestorDashboard() {
 
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:20 }}>
 
+              {/* Tipos de indicação */}
+              <div style={{ background:'#fff', borderRadius:14, border:'1px solid #E2E8F0', padding:'20px' }}>
+                <SectionTitle>Tipos de indicação (período)</SectionTitle>
+                {(() => {
+                  const consultoria = indsFiltradas.filter(i=>!i.valor_repasse).length
+                  const avaliacao = indsFiltradas.filter(i=>!!i.valor_repasse).length
+                  const total = consultoria + avaliacao
+                  if (total === 0) return <p style={{ color:'#94A3B8', fontSize:13 }}>Sem indicações no período.</p>
+                  return (
+                    <div>
+                      <div style={{ display:'flex', gap:12, marginBottom:16 }}>
+                        <div style={{ flex:1, background:'#E4F5F3', borderRadius:10, padding:'14px', textAlign:'center' }}>
+                          <div style={{ fontSize:24, fontWeight:800, color:'#065F46' }}>{consultoria}</div>
+                          <div style={{ fontSize:11, color:'#065F46', fontWeight:600, marginTop:4 }}>🏠 Consultoria em Domicílio</div>
+                          <div style={{ fontSize:11, color:'#94A3B8', marginTop:2 }}>{Math.round(consultoria/total*100)}%</div>
+                        </div>
+                        <div style={{ flex:1, background:'#EFF6FF', borderRadius:10, padding:'14px', textAlign:'center' }}>
+                          <div style={{ fontSize:24, fontWeight:800, color:'#1E40AF' }}>{avaliacao}</div>
+                          <div style={{ fontSize:11, color:'#1E40AF', fontWeight:600, marginTop:4 }}>🤝 Avaliação em Parceria</div>
+                          <div style={{ fontSize:11, color:'#94A3B8', marginTop:2 }}>{Math.round(avaliacao/total*100)}%</div>
+                        </div>
+                      </div>
+                      <div style={{ height:10, borderRadius:5, background:'#E2E8F0', overflow:'hidden' }}>
+                        <div style={{ height:10, borderRadius:5, background:'linear-gradient(to right, #069E6E '+Math.round(consultoria/total*100)+'%, #3E7996 '+Math.round(consultoria/total*100)+'%)' }} />
+                      </div>
+                    </div>
+                  )
+                })()}
+              </div>
+
               {/* Parceiros por especialidade */}
               <div style={{ background:'#fff', borderRadius:14, border:'1px solid #E2E8F0', padding:'20px' }}>
                 <SectionTitle>Parceiros por especialidade</SectionTitle>
@@ -414,8 +444,8 @@ export default function GestorDashboard() {
         {/* ════ TAB: INDICAÇÕES ════ */}
         {tab === 'indicacoes' && (
           <div style={{ background:'#fff', borderRadius:14, border:'1px solid #E2E8F0', overflow:'hidden' }}>
-            <div style={{ display:'grid', gridTemplateColumns:'1.5fr 1.2fr 1fr 1.6fr 100px 90px', gap:8, padding:'10px 16px', background:'#F8FAFC', borderBottom:'1px solid #E2E8F0' }}>
-              {['Paciente','Parceiro','Data','Status','Repasse','PDF'].map(h => (
+            <div style={{ display:'grid', gridTemplateColumns:'1.5fr 1.2fr 1fr 1.6fr 120px 90px', gap:8, padding:'10px 16px', background:'#F8FAFC', borderBottom:'1px solid #E2E8F0' }}>
+              {['Paciente','Parceiro','Data','Status','Benefício','PDF'].map(h => (
                 <div key={h} style={{ fontSize:11, fontWeight:600, color:'#94A3B8', textTransform:'uppercase', letterSpacing:'.05em' }}>{h}</div>
               ))}
             </div>
@@ -426,7 +456,7 @@ export default function GestorDashboard() {
               const st = STATUS_CFG[ind.status] || STATUS_CFG.aguardando
               const data = new Date(ind.data_indicacao).toLocaleDateString('pt-BR')
               return (
-                <div key={ind.id} style={{ display:'grid', gridTemplateColumns:'1.5fr 1.2fr 1fr 1.6fr 100px 90px', gap:8, padding:'12px 16px', borderBottom: i < indsFiltradas.length-1 ? '1px solid #F1F5F9' : 'none', alignItems:'center' }}>
+                <div key={ind.id} style={{ display:'grid', gridTemplateColumns:'1.5fr 1.2fr 1fr 1.6fr 120px 90px', gap:8, padding:'12px 16px', borderBottom: i < indsFiltradas.length-1 ? '1px solid #F1F5F9' : 'none', alignItems:'center' }}>
                   <div>
                     <div style={{ fontSize:13, fontWeight:600, color:N }}>{ind.paciente_nome}</div>
                     {ind.paciente_telefone && <div style={{ fontSize:11, color:'#94A3B8' }}>{ind.paciente_telefone}</div>}
@@ -445,8 +475,11 @@ export default function GestorDashboard() {
                       ))}
                     </select>
                   </div>
-                  <div style={{ fontSize:13, color: ind.valor_repasse ? G : '#CBD5E1', fontWeight: ind.valor_repasse ? 600 : 400 }}>
-                    {ind.valor_repasse ? `R$ ${ind.valor_repasse}` : '—'}
+                  <div>
+                    <span style={{ display:'inline-block', padding:'3px 9px', borderRadius:20, fontSize:10, fontWeight:600,
+                      background: ind.valor_repasse ? '#EFF6FF' : '#E4F5F3',
+                      color: ind.valor_repasse ? '#1E40AF' : '#065F46'
+                    }}>{ind.valor_repasse ? '🤝 Avaliação' : '🏠 Consultoria'}</span>
                   </div>
                   <div>
                     <button onClick={() => { setPdfModal({id:ind.id,url:ind.pdf_url||''}); setPdfInput(ind.pdf_url||'') }}
