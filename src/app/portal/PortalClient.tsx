@@ -63,13 +63,13 @@ export default function Portal() {
   })
   const [dataFim, setDataFim] = useState(() => new Date().toISOString().split('T')[0])
 
+  const [lastUpdated, setLastUpdated] = useState<Date|null>(null)
+
   const loadIndicacoes = useCallback(async (id: string) => {
     const { data } = await supabase.from('indicacoes').select('*')
       .eq('parceiro_id', id).order('data_indicacao', { ascending: false })
     setIndicacoes(data || [])
   }, [])
-
-  const [lastUpdated, setLastUpdated] = useState<Date|null>(null)
 
   useEffect(() => {
     const p = getCurrentPartner()
