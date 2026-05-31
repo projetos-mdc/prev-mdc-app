@@ -231,7 +231,7 @@ export default function Portal() {
             </div>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:12, marginBottom:24 }}>
               <KpiCard label="Consultoria em Domicílio" value={indicacoes.filter(i=>!i.valor_repasse).length} sub="orientação e treinamento" icon="🏠" color={'#065F46'} />
-              <KpiCard label="Avaliação em Parceria" value={indicacoes.filter(i=>!!i.valor_repasse).length} sub="com repasse de R$ 150" icon="🤝" color={S} />
+              <KpiCard label="Avaliação em Parceria" value={indicacoes.filter(i=>!!i.valor_repasse).length} sub="com acompanhamento mútuo" icon="🤝" color={S} />
             </div>
 
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:20 }}>
@@ -413,7 +413,7 @@ export default function Portal() {
               <label style={{ display:'block', fontSize:12, fontWeight:600, color:'#475569', marginBottom:8 }}>Tipo de indicação *</label>
               {[
                 { val:'s1', icon:'🏠', t:'Consultoria em Domicílio', color:G, d:'Vamos até a casa do paciente e oferecemos uma consultoria completa de orientação de higiene bucal para treinamento do familiar e cuidadores.' },
-                { val:'s2', icon:'💰', t:'Avaliação em Parceria', color:S, tag:'R$ 150 para você', d:'Fazemos a avaliação e tratamento com um acompanhamento mútuo do paciente (o paciente ganha o Kit de Higiene Bucal).' },
+                { val:'s2', icon:'🤝', t:'Avaliação em Parceria', color:S, tag:'', d:'Fazemos a avaliação e tratamento com um acompanhamento mútuo do paciente (o paciente ganha o Kit de Higiene Bucal).' },
               ].map(opt => {
                 const sel = tipoInd===opt.val
                 return (
