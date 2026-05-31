@@ -108,10 +108,10 @@ export async function gerarRelatorio(opts: ReportOptions) {
   })
 
   // Tipos de indicação
-  s2.addShape(pptx.ShapeType.rect, { x:0.4, y:4.55, w:5.8, h:0.9, fill:{ color: G.replace('#','')+'22' }, line:{ color:G.replace('#',''), width:1 } })
-  s2.addText(`🏠 Consultoria em Domicílio: ${consultoria} indicações`, { x:0.6, y:4.65, w:5.4, h:0.4, fontSize:13, color:N.replace('#',''), bold:false })
-  s2.addShape(pptx.ShapeType.rect, { x:6.6, y:4.55, w:5.8, h:0.9, fill:{ color: S.replace('#','')+'22' }, line:{ color:S.replace('#',''), width:1 } })
-  s2.addText(`🤝 Avaliação em Parceria: ${avaliacao} indicações`, { x:6.8, y:4.65, w:5.4, h:0.4, fontSize:13, color:N.replace('#',''), bold:false })
+  s2.addShape(pptx.ShapeType.rect, { x:0.4, y:4.55, w:5.8, h:0.9, fill:{ color:'E4F5F3' }, line:{ color:'069E6E', width:1 } })
+  s2.addText(`Consultoria em Domicílio: ${consultoria} indicações`, { x:0.6, y:4.65, w:5.4, h:0.4, fontSize:13, color:'2D2E47', bold:true })
+  s2.addShape(pptx.ShapeType.rect, { x:6.6, y:4.55, w:5.8, h:0.9, fill:{ color:'EFF6FF' }, line:{ color:'3E7996', width:1 } })
+  s2.addText(`Avaliacao em Parceria: ${avaliacao} indicacoes`, { x:6.8, y:4.65, w:5.4, h:0.4, fontSize:13, color:'2D2E47', bold:true })
 
   // ── SLIDE 3: STATUS DAS INDICAÇÕES ────────────────────
   const s3 = pptx.addSlide()
@@ -172,38 +172,22 @@ export async function gerarRelatorio(opts: ReportOptions) {
     })
   }
 
-  // ── SLIDE FINAL: TOP PARCEIROS ─────────────────────────
-  const topParceiros = (() => {
-    const map: Record<string,{nome:string,total:number}> = {}
-    inds.forEach(i => {
-      if (!i.parceiros) return
-      const k = i.parceiros.nome
-      if (!map[k]) map[k] = { nome:k, total:0 }
-      map[k].total++
-    })
-    return Object.values(map).sort((a,b)=>b.total-a.total).slice(0,8)
-  })()
+  // ── SLIDE FINAL: AGRADECIMENTO ───────────────────────
+  const sFinal = pptx.addSlide()
+  sFinal.background = { color: '2D2E47' }
 
-  if (topParceiros.length > 0) {
-    const sLast = pptx.addSlide()
-    sLast.background = { color: 'F8FAFC' }
-    sLast.addShape(pptx.ShapeType.rect, { x:0, y:0, w:13.33, h:0.9, fill:{ color: N.replace('#','') }, line:{ color: N.replace('#',''), width:0 } })
-    sLast.addText('Top Parceiros por Indicações', { x:0.4, y:0.1, w:12, h:0.7, fontSize:26, bold:true, color:'FFFFFF' })
-    sLast.addText(periodo, { x:0.4, y:0.95, w:12, h:0.35, fontSize:12, color:'64748B' })
+  // faixa verde decorativa
+  sFinal.addShape(pptx.ShapeType.rect, { x:0, y:2.8, w:13.33, h:0.08, fill:{ color:'069E6E' }, line:{ color:'069E6E', width:0 } })
 
-    const maxTotal = topParceiros[0].total
-    topParceiros.forEach((p, i) => {
-      const y = 1.4 + i * 0.62
-      const barW = Math.max(0.1, 7 * p.total / maxTotal)
-      const rankColors = [G,S,C,'F59E0B','8B5CF6','EF4444','14B8A6','F97316']
-      sLast.addShape(pptx.ShapeType.rect, { x:0.3, y, w:0.5, h:0.42, fill:{ color:rankColors[i].replace('#','') }, line:{ color:rankColors[i].replace('#',''), width:0 } })
-      sLast.addText(String(i+1), { x:0.3, y, w:0.5, h:0.42, fontSize:13, bold:true, color:'FFFFFF', align:'center', valign:'middle' })
-      sLast.addText(p.nome, { x:0.9, y:y+0.05, w:4, h:0.34, fontSize:13, color:'1E293B', bold:true })
-      sLast.addShape(pptx.ShapeType.rect, { x:5.2, y:y+0.08, w:7, h:0.26, fill:{ color:'E2E8F0' }, line:{ color:'E2E8F0', width:0 } })
-      sLast.addShape(pptx.ShapeType.rect, { x:5.2, y:y+0.08, w:barW, h:0.26, fill:{ color:rankColors[i].replace('#','') }, line:{ color:rankColors[i].replace('#',''), width:0 } })
-      sLast.addText(`${p.total} indicaç${p.total===1?'ão':'ões'}`, { x:12.3, y:y+0.05, w:1, h:0.34, fontSize:12, bold:true, color:rankColors[i].replace('#',''), align:'right' })
-    })
-  }
+  sFinal.addText('Meu Dentista em Casa', { x:0.6, y:0.5, w:12, h:0.5, fontSize:14, color:'B0E8E6', bold:false, align:'center' })
+  sFinal.addText('Obrigado pela parceria!', { x:0.6, y:1.1, w:12, h:1.2, fontSize:44, bold:true, color:'FFFFFF', align:'center' })
+  sFinal.addText('Juntos levamos o cuidado odontologico a todos os lugares.', { x:1, y:2.4, w:11.3, h:0.55, fontSize:16, color:'94A3B8', align:'center', italic:true })
+  sFinal.addText(unidadeNome, { x:0.6, y:3.2, w:12, h:0.5, fontSize:18, color:'00BAB4', bold:true, align:'center' })
+  sFinal.addText(periodo, { x:0.6, y:3.75, w:12, h:0.4, fontSize:13, color:'475569', align:'center' })
+
+  // logo placeholder
+  sFinal.addShape(pptx.ShapeType.rect, { x:5.67, y:4.5, w:2, h:2, fill:{ color:'069E6E' }, line:{ color:'069E6E', width:0 }, rectRadius:0.2 })
+  sFinal.addText('MDC', { x:5.67, y:4.5, w:2, h:2, fontSize:32, bold:true, color:'FFFFFF', align:'center', valign:'middle' })
 
   // Gera e baixa
   const nomeParceiro = parceiroFiltro ? `_${parceiroFiltro.split(' ')[0]}` : ''

@@ -64,6 +64,7 @@ export default function GestorDashboard() {
   const [dataFim, setDataFim] = useState(hoje.toISOString().split('T')[0])
 
   const [aprovando, setAprovando] = useState<string|null>(null)
+  const [parceiroFiltro, setParceiroFiltro] = useState('')
   const [relModal, setRelModal] = useState(false)
   const [relDataIni, setRelDataIni] = useState(() => { const d=new Date(); return new Date(d.getFullYear(),d.getMonth(),1).toISOString().split('T')[0] })
   const [relDataFim, setRelDataFim] = useState(() => new Date().toISOString().split('T')[0])
@@ -111,7 +112,9 @@ export default function GestorDashboard() {
   // ── Dados filtrados ──
   const indsFiltradas = indicacoes.filter(i => {
     const d = i.data_indicacao.split('T')[0]
-    return d >= dataIni && d <= dataFim
+    const dentroData = d >= dataIni && d <= dataFim
+    const dentroParceiro = !parceiroFiltro || i.parceiros?.nome === parceiroFiltro
+    return dentroData && dentroParceiro
   })
   const partsFiltrados = parceiros.filter(p => {
     const d = p.data_cadastro.split('T')[0]
@@ -273,8 +276,15 @@ export default function GestorDashboard() {
               <input type="date" value={dataFim} onChange={e=>setDataFim(e.target.value)}
                 style={{ padding:'6px 10px', borderRadius:8, border:'1.5px solid #CBD5E1', fontSize:13, color:N, outline:'none' }} />
             </div>
+            <select value={parceiroFiltro} onChange={e=>setParceiroFiltro(e.target.value)}
+              style={{ padding:'6px 10px', borderRadius:8, border:'1.5px solid #CBD5E1', fontSize:13, color:'#2D2E47', outline:'none', background:'#fff' }}>
+              <option value="">Todos os parceiros</option>
+              {parceiros.filter(p=>p.status==='ativo').map(p => (
+                <option key={p.id} value={p.nome}>{p.nome}</option>
+              ))}
+            </select>
             <span style={{ fontSize:12, color:'#94A3B8' }}>
-              {indsFiltradas.length} indicaç{indsFiltradas.length === 1 ? 'ão' : 'ões'} no período
+              {indsFiltradas.length} indicaç{indsFiltradas.length === 1 ? 'ão' : 'ões'}
             </span>
           </div>
         )}
