@@ -5,7 +5,7 @@ import { getCurrentPartner, clearCurrentPartner } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, AreaChart, Area
+  PieChart, Pie, Cell
 } from 'recharts'
 
 const G='#069E6E', N='#2D2E47', S='#3E7996', C='#00BAB4'
@@ -117,10 +117,6 @@ export default function Portal() {
     return d >= dataIni && d <= dataFim
   })
 
-  const totalPontos = indicacoes
-    .filter(i => i.valor_repasse && ['avaliado','tratamento','finalizado'].includes(i.status))
-    .reduce((sum, i) => sum + (i.valor_repasse||0), 0)
-
   const indsPorMes = (() => {
     const map: Record<string,number> = {}
     indicacoes.forEach(i => {
@@ -139,22 +135,6 @@ export default function Portal() {
     name: cfg.label, value: indsFiltradas.filter(i=>i.status===key).length,
     color: cfg.color, icon: cfg.icon,
   })).filter(d => d.value > 0)
-
-  const repassePorMes = (() => {
-    const map: Record<string,number> = {}
-    indicacoes
-      .filter(i => i.valor_repasse && ['avaliado','tratamento','finalizado'].includes(i.status))
-      .forEach(i => {
-        const d = new Date(i.data_indicacao)
-        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
-        map[key] = (map[key]||0)+(i.valor_repasse||0)
-      })
-    const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
-    return Object.entries(map).sort().slice(-6).map(([k,v]) => {
-      const [y,m] = k.split('-')
-      return { mes: meses[parseInt(m)-1]+'/'+y.slice(2), valor: v }
-    })
-  })()
 
   const taxaConversao = indicacoes.length
     ? Math.round(indicacoes.filter(i=>['avaliado','tratamento','finalizado'].includes(i.status)).length / indicacoes.length * 100)
@@ -227,7 +207,7 @@ export default function Portal() {
             <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12, marginBottom:12 }}>
               <KpiCard label="Total de Indicações" value={indicacoes.length} icon="📋" color={N} />
               <KpiCard label="Avaliações Realizadas" value={indicacoes.filter(i=>['avaliado','tratamento','finalizado'].includes(i.status)).length} sub={`${taxaConversao}% de conversão`} icon="✅" color={G} />
-              <KpiCard label="Pontos Acumulados" value={`${totalPontos} pts`} sub="pontos acumulados" icon="🏅" color={S} />
+              <KpiCard label="Em Tratamento" value={indicacoes.filter(i=>i.status==='tratamento').length} icon="🦷" color={C} />
             </div>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:12, marginBottom:24 }}>
               <KpiCard label="Consultoria em Domicílio" value={indicacoes.filter(i=>!i.valor_repasse).length} sub="orientação e treinamento" icon="🏠" color={'#065F46'} />
@@ -281,27 +261,7 @@ export default function Portal() {
               </div>
             </div>
 
-            {/* Repasse por mês */}
-            {repassePorMes.length > 0 && (
-              <div style={{ background:'#fff', borderRadius:14, border:'1px solid #E2E8F0', padding:'20px', marginBottom:20 }}>
-                <div style={{ fontSize:13, fontWeight:700, color:'#475569', textTransform:'uppercase', letterSpacing:'.06em', marginBottom:14 }}>Repasse financeiro por mês (R$)</div>
-                <ResponsiveContainer width="100%" height={180}>
-                  <AreaChart data={repassePorMes}>
-                    <defs>
-                      <linearGradient id="repGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={S} stopOpacity={0.2}/>
-                        <stop offset="95%" stopColor={S} stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                    <XAxis dataKey="mes" tick={{ fontSize:11, fill:'#94A3B8' }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize:11, fill:'#94A3B8' }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={{ borderRadius:10, border:'none', fontSize:12 }} />
-                    <Area type="monotone" dataKey="valor" stroke={S} strokeWidth={2.5} fill="url(#repGrad)" name="Repasse" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            )}
+
 
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
 
@@ -451,11 +411,7 @@ export default function Portal() {
                 style={{ width:'100%', padding:'10px 13px', borderRadius:10, border:'1.5px solid #CBD5E1', fontSize:14, color:N, outline:'none', resize:'vertical' }} />
             </div>
 
-            {tipoInd==='s2' && (
-              <div style={{ background:'#EFF6FF', border:'1px solid #BFDBFE', borderRadius:10, padding:'10px 14px', marginBottom:16, fontSize:13, color:'#1E40AF' }}>
-                🏅 Você acumulará <strong>150 pontos</strong> após a avaliação ser realizada.
-              </div>
-            )}
+
 
             {novaErro && <p style={{ color:'#EF4444', fontSize:13, marginBottom:10 }}>{novaErro}</p>}
 
@@ -496,8 +452,8 @@ export default function Portal() {
                   <div style={{ fontSize:11, color:'#64748B' }}>Conversão</div>
                 </div>
                 <div style={{ textAlign:'center' }}>
-                  <div style={{ fontSize:22, fontWeight:800, color:S }}>{totalPontos} pts</div>
-                  <div style={{ fontSize:11, color:'#64748B' }}>A receber</div>
+                  <div style={{ fontSize:22, fontWeight:800, color:C }}>{indicacoes.filter(i=>i.status==='tratamento').length}</div>
+                  <div style={{ fontSize:11, color:'#64748B' }}>Em tratamento</div>
                 </div>
               </div>
             </div>
