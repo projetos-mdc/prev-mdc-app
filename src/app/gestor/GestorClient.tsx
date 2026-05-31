@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
+import { gerarRelatorio } from '@/components/RelatorioGenerator'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import {
@@ -63,6 +64,25 @@ export default function GestorDashboard() {
   const [dataFim, setDataFim] = useState(hoje.toISOString().split('T')[0])
 
   const [aprovando, setAprovando] = useState<string|null>(null)
+  const [relModal, setRelModal] = useState(false)
+  const [relDataIni, setRelDataIni] = useState(() => { const d=new Date(); return new Date(d.getFullYear(),d.getMonth(),1).toISOString().split('T')[0] })
+  const [relDataFim, setRelDataFim] = useState(() => new Date().toISOString().split('T')[0])
+  const [relParceiro, setRelParceiro] = useState('')
+  const [relGerando, setRelGerando] = useState(false)
+
+  async function handleGerarRelatorio() {
+    setRelGerando(true)
+    await gerarRelatorio({
+      indicacoes,
+      parceiros: parceiros.map(p => ({ id:p.id, nome:p.nome, especialidade:p.especialidade })),
+      unidadeNome,
+      dataIni: relDataIni,
+      dataFim: relDataFim,
+      parceiroFiltro: relParceiro,
+    })
+    setRelGerando(false)
+    setRelModal(false)
+  }
 
   // PDF modal
   const [pdfModal, setPdfModal] = useState<{id:string, url:string}|null>(null)
@@ -209,6 +229,7 @@ export default function GestorDashboard() {
           </div>
           <div style={{ display:'flex', alignItems:'center', gap:12 }}>
             <span style={{ color:'#fff', fontSize:13 }}>{gestor.nome}</span>
+            <button onClick={() => setRelModal(true)} style={{ background:G, border:'none', color:'#fff', padding:'6px 14px', borderRadius:7, fontSize:12, fontWeight:600, cursor:'pointer' }}>📊 Relatório PPTX</button>
             <button onClick={sair} style={{ background:'none', border:'1px solid #2F6C82', color:'#B0E8E6', padding:'5px 12px', borderRadius:7, fontSize:12, cursor:'pointer' }}>Sair</button>
           </div>
         </div>
@@ -603,6 +624,52 @@ export default function GestorDashboard() {
           </div>
         </div>
       )}
+
+      {/* MODAL RELATÓRIO */}
+      {relModal && (
+        <div onClick={() => setRelModal(false)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.55)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:200, padding:20 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background:'#fff', borderRadius:16, padding:'28px', maxWidth:480, width:'100%' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
+              <h3 style={{ fontSize:17, fontWeight:700, color:N }}>📊 Gerar Relatório PPTX</h3>
+              <button onClick={() => setRelModal(false)} style={{ background:'none', border:'none', fontSize:22, cursor:'pointer', color:'#94A3B8' }}>×</button>
+            </div>
+
+            <div style={{ marginBottom:14 }}>
+              <label style={{ display:'block', fontSize:12, fontWeight:600, color:'#475569', marginBottom:6 }}>Período</label>
+              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <input type="date" value={relDataIni} onChange={e=>setRelDataIni(e.target.value)}
+                  style={{ flex:1, padding:'9px 12px', borderRadius:9, border:'1.5px solid #CBD5E1', fontSize:13, color:N, outline:'none' }} />
+                <span style={{ color:'#94A3B8', fontSize:13 }}>até</span>
+                <input type="date" value={relDataFim} onChange={e=>setRelDataFim(e.target.value)}
+                  style={{ flex:1, padding:'9px 12px', borderRadius:9, border:'1.5px solid #CBD5E1', fontSize:13, color:N, outline:'none' }} />
+              </div>
+            </div>
+
+            <div style={{ marginBottom:20 }}>
+              <label style={{ display:'block', fontSize:12, fontWeight:600, color:'#475569', marginBottom:6 }}>Filtrar por parceiro (opcional)</label>
+              <select value={relParceiro} onChange={e=>setRelParceiro(e.target.value)}
+                style={{ width:'100%', padding:'9px 12px', borderRadius:9, border:'1.5px solid #CBD5E1', fontSize:13, color:N, outline:'none', background:'#fff' }}>
+                <option value="">Todos os parceiros</option>
+                {parceiros.filter(p=>p.status==='ativo').map(p => (
+                  <option key={p.id} value={p.nome}>{p.nome} — {p.especialidade}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ background:'#F8FAFC', borderRadius:10, padding:'12px 14px', marginBottom:20, fontSize:13, color:'#475569' }}>
+              📋 O relatório incluirá: <strong>capa, resumo executivo, status das indicações, lista detalhada e ranking de parceiros</strong>.
+            </div>
+
+            <div style={{ display:'flex', gap:10 }}>
+              <button onClick={() => setRelModal(false)} style={{ flex:1, padding:'11px', borderRadius:10, border:'1.5px solid #CBD5E1', background:'#fff', color:'#475569', fontSize:13, cursor:'pointer' }}>Cancelar</button>
+              <button onClick={handleGerarRelatorio} disabled={relGerando} style={{ flex:2, padding:'11px', borderRadius:10, border:'none', background:relGerando?'#CBD5E1':G, color:'#fff', fontSize:13, fontWeight:600, cursor:relGerando?'not-allowed':'pointer' }}>
+                {relGerando ? '⏳ Gerando...' : '⬇ Baixar PPTX'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
