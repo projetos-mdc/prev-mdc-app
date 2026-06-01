@@ -411,22 +411,49 @@ export default function GestorDashboard() {
                 }
               </div>
 
+            </div>
+
+            {/* SEGUNDA LINHA: Parceiros novos + Comparativo tipos */}
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:20 }}>
+
               {/* Parceiros novos por mês */}
               <div style={{ background:'#fff', borderRadius:14, border:'1px solid #E2E8F0', padding:'20px' }}>
+                <SectionTitle>Parceiros novos por mês</SectionTitle>
+                {parcsPorMes.length === 0
+                  ? <p style={{ color:'#94A3B8', fontSize:13 }}>Sem dados ainda.</p>
+                  : (() => {
+                      const maxVal = Math.max(...parcsPorMes.map(d=>d.total), 1)
+                      return (
+                        <div style={{ display:'flex', alignItems:'flex-end', gap:6, height:155, paddingTop:10 }}>
+                          {parcsPorMes.map((d, i) => (
+                            <div key={i} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:4, height:'100%', justifyContent:'flex-end' }}>
+                              <span style={{ fontSize:11, fontWeight:700, color:S }}>{d.total}</span>
+                              <div style={{ width:'100%', background:S, borderRadius:'6px 6px 0 0', height:`${Math.max(8, d.total/maxVal*110)}px` }} />
+                              <span style={{ fontSize:10, color:'#94A3B8', marginTop:4, whiteSpace:'nowrap' }}>{d.mes}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )
+                    })()
+                }
+              </div>
+
+              {/* Comparativo Consultoria vs Avaliação */}
+              <div style={{ background:'#fff', borderRadius:14, border:'1px solid #E2E8F0', padding:'20px' }}>
                 <SectionTitle>Consultoria vs Avaliação por mês</SectionTitle>
-                <div style={{ display:'flex', gap:16, marginBottom:12 }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-                    <div style={{ width:12, height:3, borderRadius:2, background:G }} />
-                    <span style={{ fontSize:11, color:'#64748B' }}>Consultoria em Domicílio</span>
+                <div style={{ display:'flex', gap:16, marginBottom:10 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+                    <div style={{ width:14, height:3, borderRadius:2, background:G }} />
+                    <span style={{ fontSize:11, color:'#64748B' }}>Consultoria</span>
                   </div>
-                  <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-                    <div style={{ width:12, height:3, borderRadius:2, background:S }} />
-                    <span style={{ fontSize:11, color:'#64748B' }}>Avaliação em Parceria</span>
+                  <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+                    <div style={{ width:14, height:3, borderRadius:2, background:S }} />
+                    <span style={{ fontSize:11, color:'#64748B' }}>Avaliação</span>
                   </div>
                 </div>
                 {comparativoMes.length === 0
                   ? <p style={{ color:'#94A3B8', fontSize:13 }}>Sem dados ainda.</p>
-                  : <ResponsiveContainer width="100%" height={180}>
+                  : <ResponsiveContainer width="100%" height={155}>
                       <LineChart data={comparativoMes} margin={{ left:0, right:10, top:5, bottom:0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
                         <XAxis dataKey="mes" tick={{ fontSize:11, fill:'#94A3B8' }} axisLine={false} tickLine={false} />
