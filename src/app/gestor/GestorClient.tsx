@@ -402,15 +402,20 @@ export default function GestorDashboard() {
                 <SectionTitle>Parceiros novos por mês</SectionTitle>
                 {parcsPorMes.length === 0
                   ? <p style={{ color:'#94A3B8', fontSize:13 }}>Sem dados ainda.</p>
-                  : <ResponsiveContainer width="100%" height={180}>
-                      <BarChart data={parcsPorMes} barCategoryGap="20%" margin={{ left:0, right:0, top:5, bottom:0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                        <XAxis dataKey="mes" tick={{ fontSize:11, fill:'#94A3B8' }} axisLine={false} tickLine={false} padding={{ left:30, right:30 }} />
-                        <YAxis tick={{ fontSize:11, fill:'#94A3B8' }} axisLine={false} tickLine={false} allowDecimals={false} />
-                        <Tooltip contentStyle={{ borderRadius:10, border:'none', fontSize:12 }} />
-                        <Bar dataKey="total" fill={S} radius={[6,6,0,0]} name="Parceiros" maxBarSize={80} />
-                      </BarChart>
-                    </ResponsiveContainer>
+                  : (() => {
+                      const maxVal = Math.max(...parcsPorMes.map(d=>d.total), 1)
+                      return (
+                        <div style={{ display:'flex', alignItems:'flex-end', gap:6, height:160, paddingTop:10 }}>
+                          {parcsPorMes.map((d, i) => (
+                            <div key={i} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:4, height:'100%', justifyContent:'flex-end' }}>
+                              <span style={{ fontSize:11, fontWeight:700, color:S }}>{d.total}</span>
+                              <div style={{ width:'100%', background:S, borderRadius:'6px 6px 0 0', height:`${Math.max(8, d.total/maxVal*120)}px` }} />
+                              <span style={{ fontSize:10, color:'#94A3B8', marginTop:4, whiteSpace:'nowrap' }}>{d.mes}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )
+                    })()
                 }
               </div>
             </div>
