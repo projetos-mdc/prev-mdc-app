@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
+  LineChart, Line,
 } from 'recharts'
 
 const G='#069E6E', N='#2D2E47', S='#3E7996', C='#00BAB4', T='#2F6C82'
@@ -151,6 +152,19 @@ export default function GestorDashboard() {
   })).filter(d => d.value > 0)
 
   // ── Gráfico: parceiros novos por mês ──
+  const comparativoMes = (() => {
+    const map: Record<string,{mes:string,consultoria:number,avaliacao:number}> = {}
+    const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
+    indicacoes.forEach(i => {
+      const d = new Date(i.data_indicacao)
+      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
+      if (!map[key]) map[key] = { mes: meses[d.getMonth()]+'/'+String(d.getFullYear()).slice(2), consultoria:0, avaliacao:0 }
+      if (i.valor_repasse) map[key].avaliacao++
+      else map[key].consultoria++
+    })
+    return Object.entries(map).sort().slice(-6).map(([,v]) => v)
+  })()
+
   const parcsPorMes = (() => {
     const map: Record<string,number> = {}
     parceiros.forEach(p => {
@@ -399,23 +413,29 @@ export default function GestorDashboard() {
 
               {/* Parceiros novos por mês */}
               <div style={{ background:'#fff', borderRadius:14, border:'1px solid #E2E8F0', padding:'20px' }}>
-                <SectionTitle>Parceiros novos por mês</SectionTitle>
-                {parcsPorMes.length === 0
+                <SectionTitle>Consultoria vs Avaliação por mês</SectionTitle>
+                <div style={{ display:'flex', gap:16, marginBottom:12 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                    <div style={{ width:12, height:3, borderRadius:2, background:G }} />
+                    <span style={{ fontSize:11, color:'#64748B' }}>Consultoria em Domicílio</span>
+                  </div>
+                  <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                    <div style={{ width:12, height:3, borderRadius:2, background:S }} />
+                    <span style={{ fontSize:11, color:'#64748B' }}>Avaliação em Parceria</span>
+                  </div>
+                </div>
+                {comparativoMes.length === 0
                   ? <p style={{ color:'#94A3B8', fontSize:13 }}>Sem dados ainda.</p>
-                  : (() => {
-                      const maxVal = Math.max(...parcsPorMes.map(d=>d.total), 1)
-                      return (
-                        <div style={{ display:'flex', alignItems:'flex-end', gap:6, height:160, paddingTop:10 }}>
-                          {parcsPorMes.map((d, i) => (
-                            <div key={i} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:4, height:'100%', justifyContent:'flex-end' }}>
-                              <span style={{ fontSize:11, fontWeight:700, color:S }}>{d.total}</span>
-                              <div style={{ width:'100%', background:S, borderRadius:'6px 6px 0 0', height:`${Math.max(8, d.total/maxVal*120)}px` }} />
-                              <span style={{ fontSize:10, color:'#94A3B8', marginTop:4, whiteSpace:'nowrap' }}>{d.mes}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )
-                    })()
+                  : <ResponsiveContainer width="100%" height={180}>
+                      <LineChart data={comparativoMes} margin={{ left:0, right:10, top:5, bottom:0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+                        <XAxis dataKey="mes" tick={{ fontSize:11, fill:'#94A3B8' }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fontSize:11, fill:'#94A3B8' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                        <Tooltip contentStyle={{ borderRadius:10, border:'none', fontSize:12 }} />
+                        <Line type="monotone" dataKey="consultoria" stroke={G} strokeWidth={2.5} dot={{ r:4, fill:G }} name="Consultoria" />
+                        <Line type="monotone" dataKey="avaliacao" stroke={S} strokeWidth={2.5} dot={{ r:4, fill:S }} name="Avaliação" />
+                      </LineChart>
+                    </ResponsiveContainer>
                 }
               </div>
             </div>
