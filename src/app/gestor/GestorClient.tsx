@@ -27,7 +27,7 @@ type Gestor = { id:string; nome:string; email:string; role:string; unidade_id:st
 type Indicacao = {
   id:string; paciente_nome:string; paciente_telefone:string;
   observacoes:string|null; status:string; data_indicacao:string;
-  pdf_url:string|null; valor_repasse:number|null;
+  pdf_url:string|null; valor_repasse:number|null; responsavel:string|null;
   parceiros:{nome:string;especialidade:string}|null
 }
 type Parceiro = {
@@ -537,6 +537,7 @@ export default function GestorDashboard() {
                 <div key={ind.id} style={{ display:'grid', gridTemplateColumns:'1.5fr 1.2fr 1fr 1.6fr 120px 90px', gap:8, padding:'12px 16px', borderBottom: i < indsFiltradas.length-1 ? '1px solid #F1F5F9' : 'none', alignItems:'center' }}>
                   <div>
                     <div style={{ fontSize:13, fontWeight:600, color:N }}>{ind.paciente_nome}</div>
+                    {ind.responsavel && <div style={{ fontSize:11, color:'#64748B' }}>👤 {ind.responsavel}</div>}
                     {ind.paciente_telefone && <div style={{ fontSize:11, color:'#94A3B8' }}>{ind.paciente_telefone}</div>}
                     {ind.observacoes && <div style={{ fontSize:11, color:'#94A3B8', marginTop:2, fontStyle:'italic' }} title={ind.observacoes}>{ind.observacoes.substring(0,40)}{ind.observacoes.length>40?'...':''}</div>}
                   </div>

@@ -28,7 +28,7 @@ type Partner = {
 type Indicacao = {
   id: string; paciente_nome: string; paciente_telefone: string;
   observacoes: string; status: string; data_indicacao: string;
-  pdf_url: string | null; valor_repasse: number | null;
+  pdf_url: string | null; valor_repasse: number | null; responsavel: string | null;
 }
 
 function KpiCard({ label, value, sub, color, icon }: { label:string; value:string|number; sub?:string; color:string; icon:string }) {
@@ -52,7 +52,7 @@ export default function Portal() {
   const [loading, setLoading] = useState(true)
   const [pdfModal, setPdfModal] = useState<Indicacao|null>(null)
 
-  const [novaForm, setNovaForm] = useState({ nome:'', telefone:'', obs:'' })
+  const [novaForm, setNovaForm] = useState({ nome:'', telefone:'', responsavel:'', obs:'' })
   const [novaSaving, setNovaSaving] = useState(false)
   const [novaOk, setNovaOk] = useState(false)
   const [novaErro, setNovaErro] = useState('')
@@ -97,13 +97,14 @@ export default function Portal() {
       paciente_nome: novaForm.nome.trim(),
       paciente_telefone: novaForm.telefone.trim(),
       observacoes: novaForm.obs.trim(),
+      responsavel: novaForm.responsavel.trim() || null,
       status: 'aguardando',
       valor_repasse: tipoInd === 's2' ? 150 : null,
     })
     setNovaSaving(false)
     if (error) { setNovaErro('Erro ao enviar indicação.'); return }
     setNovaOk(true)
-    setNovaForm({ nome:'', telefone:'', obs:'' })
+    setNovaForm({ nome:'', telefone:'', responsavel:'', obs:'' })
     setTipoInd('')
     await loadIndicacoes(partner!.id)
     setTimeout(() => { setNovaOk(false); setTab('pacientes') }, 2000)
@@ -335,6 +336,7 @@ export default function Portal() {
                 <div key={ind.id} style={{ display:'grid', gridTemplateColumns:'1.8fr 1fr 1.5fr 90px', gap:8, padding:'12px 16px', borderBottom:i<indicacoes.length-1?'1px solid #F1F5F9':'none', alignItems:'center' }}>
                   <div>
                     <div style={{ fontSize:13, fontWeight:600, color:N }}>{ind.paciente_nome}</div>
+                    {ind.responsavel && <div style={{ fontSize:11, color:'#64748B' }}>👤 {ind.responsavel}</div>}
                     {ind.paciente_telefone && <div style={{ fontSize:11, color:'#94A3B8' }}>{ind.paciente_telefone}</div>}
                     <span style={{ display:'inline-block', marginTop:4, padding:'2px 8px', borderRadius:20, fontSize:10, fontWeight:600,
                       background: ind.valor_repasse ? '#EFF6FF' : '#E4F5F3',
@@ -396,6 +398,7 @@ export default function Portal() {
             {[
               { label:'Nome do paciente *', key:'nome', ph:'Nome completo' },
               { label:'Telefone de contato *', key:'telefone', ph:'(61) 99999-9999' },
+              { label:'Responsável pelo paciente', key:'responsavel', ph:'Nome do familiar ou cuidador' },
             ].map(f => (
               <div key={f.key} style={{ marginBottom:14 }}>
                 <label style={{ display:'block', fontSize:12, fontWeight:600, color:'#475569', marginBottom:5 }}>{f.label}</label>
