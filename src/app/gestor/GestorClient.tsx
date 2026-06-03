@@ -575,8 +575,8 @@ export default function GestorDashboard() {
         {/* ════ TAB: PARCEIROS ════ */}
         {tab === 'parceiros' && (
           <div style={{ background:'#fff', borderRadius:14, border:'1px solid #E2E8F0', overflow:'hidden' }}>
-            <div style={{ display:'grid', gridTemplateColumns:'1.5fr 1fr 1fr 1fr 100px', gap:8, padding:'10px 16px', background:'#F8FAFC', borderBottom:'1px solid #E2E8F0' }}>
-              {['Nome','Especialidade','Tipo','Contato','Cadastro'].map(h => (
+            <div style={{ display:'grid', gridTemplateColumns:'1.5fr 1fr 1.2fr 100px', gap:8, padding:'10px 16px', background:'#F8FAFC', borderBottom:'1px solid #E2E8F0' }}>
+              {['Nome','Especialidade','Contato','Cadastro'].map(h => (
                 <div key={h} style={{ fontSize:11, fontWeight:600, color:'#94A3B8', textTransform:'uppercase', letterSpacing:'.05em' }}>{h}</div>
               ))}
             </div>
@@ -584,13 +584,12 @@ export default function GestorDashboard() {
               <div style={{ padding:'40px 20px', textAlign:'center', color:'#94A3B8', fontSize:14 }}>Nenhum parceiro cadastrado nesta unidade ainda.</div>
             )}
             {parceiros.map((p, i) => (
-              <div key={p.id} style={{ display:'grid', gridTemplateColumns:'1.5fr 1fr 1fr 1fr 100px', gap:8, padding:'12px 16px', borderBottom: i < parceiros.length-1 ? '1px solid #F1F5F9' : 'none', alignItems:'center' }}>
+              <div key={p.id} style={{ display:'grid', gridTemplateColumns:'1.5fr 1fr 1.2fr 100px', gap:8, padding:'12px 16px', borderBottom: i < parceiros.length-1 ? '1px solid #F1F5F9' : 'none', alignItems:'center' }}>
                 <div>
                   <div style={{ fontSize:13, fontWeight:600, color:N }}>{p.nome}</div>
                   <div style={{ fontSize:11, color:'#94A3B8' }}>{p.email}</div>
                 </div>
                 <div style={{ fontSize:13, color:'#64748B' }}>{p.especialidade}</div>
-                <div style={{ fontSize:12, color:'#64748B' }}>{p.tipo==='profissional'?'Profissional':'Empresa'}</div>
                 <div style={{ fontSize:12, color:'#64748B' }}>{p.whatsapp}</div>
                 <div style={{ fontSize:11, color:'#94A3B8' }}>{new Date(p.data_cadastro).toLocaleDateString('pt-BR')}</div>
               </div>
