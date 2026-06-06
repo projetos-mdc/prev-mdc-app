@@ -34,7 +34,7 @@ export default function Login() {
 
     const emailNorm = email.toLowerCase().trim()
 
-    // 1) Tenta parceiro — verifica status
+    // 1) Tenta parceiro
     const { data: parceiro } = await supabase
       .from('parceiros')
       .select('*')
@@ -66,11 +66,31 @@ export default function Login() {
       .eq('senha', senha)
       .single()
 
-    setLoading(false)
-
     if (gestor) {
+      if (gestor.status === 'inativo') {
+        setLoading(false)
+        setErro('Seu acesso está suspenso. Entre em contato com o administrador.')
+        return
+      }
+      setLoading(false)
       localStorage.setItem('gestor_session', JSON.stringify(gestor))
       router.push('/gestor')
+      return
+    }
+
+    // 3) Tenta administrador
+    const { data: admin } = await supabase
+      .from('administradores')
+      .select('*')
+      .eq('email', emailNorm)
+      .eq('senha', senha)
+      .single()
+
+    setLoading(false)
+
+    if (admin) {
+      localStorage.setItem('admin_session', JSON.stringify(admin))
+      router.push('/admin')
       return
     }
 
@@ -83,7 +103,7 @@ export default function Login() {
 
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <img src="/logo-mdc.png" alt="Meu Dentista em Casa" style={{ height: 64, display: 'inline-block', width: 'auto', marginBottom: 16 }} />
-          <h2 style={{ fontSize: 20, fontWeight: 700, color: N, marginBottom: 4 }}>Portal Parceiro</h2>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: N, marginBottom: 4 }}>Portal MDC</h2>
           <p style={{ fontSize: 13, color: G, fontWeight: 500 }}>Profissionais de Saúde</p>
         </div>
 
