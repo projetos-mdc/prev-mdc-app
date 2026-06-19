@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 
-const G='#069E6E', N='#2D2E47', S='#3E7996'
+const G='#069E6E', N='#2D2E47'
 
 const PROF_SEGS = [
   {val:'Médico / Geriatra',          icon:'🩺'},
@@ -21,6 +21,80 @@ const PROF_SEGS = [
   {val:'Técnico de Enfermagem',       icon:'🩹'},
   {val:'Outro profissional de saúde', icon:'👩‍⚕️'},
 ]
+
+function ModalRecuperar({ onClose }: { onClose: () => void }) {
+  const [recupEmail, setRecupEmail]     = useState('')
+  const [recupLoading, setRecupLoading] = useState(false)
+  const [recupMsg, setRecupMsg]         = useState('')
+  const [recupErro, setRecupErro]       = useState('')
+
+  async function handleRecuperar() {
+    if (!recupEmail) { setRecupErro('Digite seu e-mail.'); return }
+    setRecupLoading(true); setRecupErro(''); setRecupMsg('')
+    try {
+      const res = await fetch('/api/recuperar-senha', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: recupEmail.toLowerCase().trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Erro')
+      setRecupMsg('Se o e-mail estiver cadastrado, você receberá sua senha em instantes. Verifique também a caixa de spam.')
+    } catch {
+      setRecupErro('Erro ao enviar. Tente novamente.')
+    }
+    setRecupLoading(false)
+  }
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      zIndex: 999, padding: 20,
+    }} onClick={onClose}>
+      <div style={{
+        background: '#fff', borderRadius: 16, padding: '32px 28px',
+        width: '100%', maxWidth: 400,
+        boxShadow: '0 8px 40px rgba(0,0,0,.16)',
+      }} onClick={e => e.stopPropagation()}>
+
+        <div style={{ textAlign: 'center', marginBottom: 20 }}>
+          <div style={{ fontSize: 40, marginBottom: 10 }}>🔑</div>
+          <h3 style={{ fontSize: 18, fontWeight: 700, color: N, margin: 0 }}>Recuperar senha</h3>
+          <p style={{ fontSize: 13, color: '#64748B', marginTop: 6 }}>
+            Digite seu e-mail cadastrado e enviaremos sua senha.
+          </p>
+        </div>
+
+        {!recupMsg ? (<>
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 5 }}>E-mail</label>
+            <input
+              type="email" value={recupEmail} placeholder="seu@email.com"
+              onChange={e => setRecupEmail(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleRecuperar()}
+              style={{ width: '100%', padding: '10px 13px', borderRadius: 10, border: '1.5px solid #CBD5E1', background: '#F8FAFC', fontSize: 14, color: N, outline: 'none', boxSizing: 'border-box' }}
+            />
+          </div>
+          {recupErro && <p style={{ color: '#EF4444', fontSize: 13, marginBottom: 10 }}>{recupErro}</p>}
+          <button onClick={handleRecuperar} disabled={recupLoading} style={{
+            width: '100%', padding: '12px', borderRadius: 10, border: 'none',
+            background: recupLoading ? '#CBD5E1' : G, color: '#fff',
+            fontWeight: 600, fontSize: 14, cursor: recupLoading ? 'not-allowed' : 'pointer',
+          }}>{recupLoading ? 'Enviando...' : 'Enviar senha por e-mail →'}</button>
+        </>) : (
+          <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 12, padding: '16px 18px', textAlign: 'center' }}>
+            <p style={{ fontSize: 14, color: '#166534', margin: 0, lineHeight: 1.6 }}>✅ {recupMsg}</p>
+          </div>
+        )}
+
+        <button onClick={onClose} style={{ display: 'block', margin: '16px auto 0', background: 'none', border: 'none', color: '#94A3B8', fontSize: 13, cursor: 'pointer' }}>
+          Fechar
+        </button>
+      </div>
+    </div>
+  )
+}
 
 function Prog({ step, total }: { step: number; total: number }) {
   return (
@@ -37,10 +111,11 @@ function Prog({ step, total }: { step: number; total: number }) {
 
 export default function Cadastro() {
   const router = useRouter()
-  const [step, setStep]     = useState(0)
+  const [step, setStep]       = useState(0)
   const [loading, setLoading] = useState(false)
-  const [erro, setErro]     = useState('')
+  const [erro, setErro]       = useState('')
   const [unidades, setUnidades] = useState<{id:string;nome:string}[]>([])
+  const [showRecup, setShowRecup] = useState(false)
 
   useEffect(() => {
     supabase.from('unidades').select('id, nome').order('nome').then(({ data }) => {
@@ -55,21 +130,21 @@ export default function Cadastro() {
 
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }))
 
-  const total = 2 // passo 0 e passo 1 visíveis
+  const total = 2
 
   async function finalizar() {
     setLoading(true)
     setErro('')
     const { error } = await supabase.from('parceiros').insert({
-      nome:         form.nome.trim(),
-      email:        form.email.toLowerCase().trim(),
-      whatsapp:     form.whatsapp.trim(),
-      senha:        form.senha,
-      tipo:         'profissional',
+      nome:          form.nome.trim(),
+      email:         form.email.toLowerCase().trim(),
+      whatsapp:      form.whatsapp.trim(),
+      senha:         form.senha,
+      tipo:          'profissional',
       especialidade: form.especialidade,
-      segmento:     's1',
-      status:       'pendente',
-      unidade_id:   form.unidade_id || null,
+      segmento:      's1',
+      status:        'pendente',
+      unidade_id:    form.unidade_id || null,
     })
     setLoading(false)
     if (error) {
@@ -77,7 +152,7 @@ export default function Cadastro() {
       else setErro('Erro ao salvar. Tente novamente.')
       return
     }
-    setStep(2) // sucesso
+    setStep(2)
   }
 
   const inp = (label: string, key: string, type = 'text', ph = '') => (
@@ -114,10 +189,20 @@ export default function Cadastro() {
   return (
     <div style={{ minHeight: '100vh', background: '#F1F5F9', padding: '24px 16px' }}>
 
+      {showRecup && <ModalRecuperar onClose={() => setShowRecup(false)} />}
+
       {/* Header */}
       <div style={{ maxWidth: 500, margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Link href="/"><img src="/logo-mdc.png" alt="MDC" style={{ height: 28 }} /></Link>
-        <Link href="/login" style={{ fontSize: 13, color: '#64748B', textDecoration: 'none' }}>Já tenho conta →</Link>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+          <Link href="/login" style={{ fontSize: 13, color: '#64748B', textDecoration: 'none' }}>Já tenho conta →</Link>
+          <button
+            onClick={() => setShowRecup(true)}
+            style={{ background: 'none', border: 'none', color: '#3E7996', fontSize: 12, cursor: 'pointer', padding: 0, fontWeight: 500 }}
+          >
+            Esqueci minha senha
+          </button>
+        </div>
       </div>
 
       <div style={{ maxWidth: 500, margin: '0 auto' }}>
