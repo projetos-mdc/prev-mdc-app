@@ -1,13 +1,11 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { Resend } from 'resend'
+import nodemailer from 'nodemailer'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_KEY!
 )
-
-const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(req: Request) {
   try {
@@ -29,8 +27,16 @@ export async function POST(req: Request) {
 
     const firstName = parceiro.nome?.split(' ')[0] ?? 'Parceiro'
 
-    await resend.emails.send({
-      from: 'Meu Dentista em Casa <contato@meudentistaemcasa.com.br>',
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD,
+      },
+    })
+
+    await transporter.sendMail({
+      from: `"Meu Dentista em Casa" <${process.env.GMAIL_USER}>`,
       to: parceiro.email,
       subject: 'Recuperação de senha — Meu Dentista em Casa',
       html: `
@@ -42,7 +48,6 @@ export async function POST(req: Request) {
     <tr><td align="center">
       <table width="100%" style="max-width:520px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #E2E8F0;">
 
-        <!-- Header verde -->
         <tr>
           <td style="background:#069E6E;padding:28px 32px;text-align:center;">
             <h1 style="margin:0;color:#fff;font-size:20px;font-weight:700;">Meu Dentista em Casa</h1>
@@ -50,7 +55,6 @@ export async function POST(req: Request) {
           </td>
         </tr>
 
-        <!-- Corpo -->
         <tr>
           <td style="padding:32px;">
             <p style="margin:0 0 12px;font-size:15px;color:#2D2E47;">Olá, <strong>${firstName}</strong>!</p>
@@ -58,17 +62,15 @@ export async function POST(req: Request) {
               Recebemos uma solicitação de recuperação de senha para o seu cadastro no portal de parceiros do <strong>Meu Dentista em Casa</strong>.
             </p>
 
-            <!-- Caixa da senha -->
             <div style="background:#F0FDF4;border:1.5px solid #069E6E;border-radius:12px;padding:20px 24px;margin-bottom:24px;text-align:center;">
               <p style="margin:0 0 6px;font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.5px;">Sua senha atual</p>
               <p style="margin:0;font-size:24px;font-weight:700;color:#2D2E47;letter-spacing:2px;">${parceiro.senha}</p>
             </div>
 
             <p style="margin:0 0 24px;font-size:13px;color:#64748B;line-height:1.6;">
-              Acesse o portal com seu e-mail e a senha acima. Recomendamos que você altere sua senha após entrar.
+              Acesse o portal com seu e-mail e a senha acima.
             </p>
 
-            <!-- Botão -->
             <div style="text-align:center;margin-bottom:24px;">
               <a href="https://prev-mdc-app.vercel.app/login"
                  style="display:inline-block;background:#069E6E;color:#fff;text-decoration:none;padding:13px 32px;border-radius:10px;font-weight:600;font-size:14px;">
