@@ -429,7 +429,9 @@ export default function AdminClient() {
                 <KpiCard label="Total de Gestores"    value={gestores.length}          sub={`${gestAtivos} ativos • ${gestInativos} pausados`} color={N}    icon="👔"/>
                 <KpiCard label="Total de Parceiros"   value={parceiros.length}         sub={`${parceiros.filter(p=>p.status==='ativo').length} ativos`}   color={TEAL} icon="🤝"/>
                 <KpiCard label="Indicações (período)" value={indsFiltDash.length}      sub={`de ${indicacoes.length} no total`} color={G} icon="📋"/>
-                <KpiCard label="Atendidos"             value={indsFiltDash.filter(i=>i.status==='avaliado'||i.status==='tratamento'||i.status==='finalizado').length} sub={`${Math.round(indsFiltDash.length>0?indsFiltDash.filter(i=>i.status==='avaliado'||i.status==='tratamento'||i.status==='finalizado').length/indsFiltDash.length*100:0)}% conversão`} color={CYAN} icon="✅"/>
+                <KpiCard label="Avaliações realizadas" value={indsFiltDash.filter(i=>i.status==='avaliado').length} sub="status: avaliado" color={G} icon="✅"/>
+                <KpiCard label="Em tratamento"        value={indsFiltDash.filter(i=>i.status==='tratamento').length} sub="status: tratamento" color={CYAN} icon="🦷"/>
+                <KpiCard label="Finalizados"           value={indsFiltDash.filter(i=>i.status==='finalizado').length} sub="status: finalizado" color="#6366F1" icon="🏁"/>
               </div>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20,marginBottom:20}}>
                 <div style={{background:'#fff',borderRadius:14,padding:20,border:'1px solid #E2E8F0'}}><h3 style={{fontSize:14,fontWeight:600,color:N,margin:'0 0 16px'}}>Indicações por Mês</h3>{indsPorMes.length===0?<div style={{textAlign:'center',color:'#94A3B8',padding:'40px 0',fontSize:13}}>Sem dados</div>:<ResponsiveContainer width="100%" height={220}><BarChart data={indsPorMes}><XAxis dataKey="mes" tick={{fontSize:11}}/><YAxis tick={{fontSize:11}} allowDecimals={false}/><Tooltip/><Bar dataKey="total" fill={G} radius={[4,4,0,0]} name="Indicações"/></BarChart></ResponsiveContainer>}</div>
