@@ -12,9 +12,9 @@ const WARN = '#F59E0B', DANGER = '#EF4444'
 const COLORS = [G, TEAL, CYAN, '#6366F1', '#EC4899', '#F97316', '#84CC16']
 const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
 const ESPECIALIDADES = ['Médico','Enfermeiro','Fisioterapeuta','Nutricionista','Psicólogo','Terapeuta Ocupacional','Fonoaudiólogo','Dentista','Técnico de Enfermagem','Outro Profissional de Saúde']
-const STATUS_IND = ['aguardando_contato','agendado','atendido','cancelado','pendente']
-const STATUS_LABEL: Record<string,string> = { aguardando_contato:'Aguardando Contato', agendado:'Agendado', atendido:'Atendido', cancelado:'Cancelado', pendente:'Pendente' }
-const STATUS_COLOR: Record<string,string> = { aguardando_contato:WARN, agendado:TEAL, atendido:G, cancelado:DANGER, pendente:'#94A3B8' }
+const STATUS_IND = ['aguardando','agendado','avaliado','tratamento','finalizado','cancelado']
+const STATUS_LABEL: Record<string,string> = { aguardando:'Aguardando contato', agendado:'Agendado', avaliado:'Avaliação realizada', tratamento:'Em tratamento', finalizado:'Finalizado', cancelado:'Cancelado' }
+const STATUS_COLOR: Record<string,string> = { aguardando:WARN, agendado:TEAL, avaliado:G, tratamento:'#065F46', finalizado:'#6366F1', cancelado:DANGER }
 
 type Gestor    = { id:string; nome:string; email:string; senha:string; status:string; created_at:string; unidade_id?:string; unidades?:{nome:string} }
 type Parceiro  = { id:string; nome:string; email:string; especialidade:string; status:string; data_cadastro:string; unidade_id?:string; whatsapp?:string; senha?:string }
@@ -171,7 +171,7 @@ export default function AdminClient() {
   const tiposPorMes     = (() => { const m:Record<string,{mes:string;consultoria:number;avaliacao:number}>={};indsFiltDash.forEach(i=>{const d=new Date(i.data_indicacao);const k=`${MESES[d.getMonth()]}/${String(d.getFullYear()).slice(2)}`;if(!m[k])m[k]={mes:k,consultoria:0,avaliacao:0};if((i.modelo??'').toLowerCase().includes('consult'))m[k].consultoria++;else m[k].avaliacao++});return Object.values(m) })()
   const statusData      = [
     {name:'Agendado',   value:indsFiltDash.filter(i=>i.status==='agendado').length},
-    {name:'Atendido',   value:indsFiltDash.filter(i=>i.status==='atendido').length},
+    {name:'Atendido',   value:new Set(indsFiltDash.filter(i=>['avaliado','tratamento','finalizado'].includes(i.status)).map(i=>i.paciente_nome.toLowerCase().trim())).size},
     {name:'Pendente',   value:indsFiltDash.filter(i=>i.status==='pendente').length},
     {name:'Cancelado',  value:indsFiltDash.filter(i=>i.status==='cancelado').length},
     {name:'Aguardando', value:indsFiltDash.filter(i=>i.status?.startsWith('aguard')).length},
@@ -429,7 +429,7 @@ export default function AdminClient() {
                 <KpiCard label="Total de Gestores"    value={gestores.length}          sub={`${gestAtivos} ativos • ${gestInativos} pausados`} color={N}    icon="👔"/>
                 <KpiCard label="Total de Parceiros"   value={parceiros.length}         sub={`${parceiros.filter(p=>p.status==='ativo').length} ativos`}   color={TEAL} icon="🤝"/>
                 <KpiCard label="Indicações (período)" value={indsFiltDash.length}      sub={`de ${indicacoes.length} no total`} color={G} icon="📋"/>
-                <KpiCard label="Atendidos"             value={indsFiltDash.filter(i=>i.status==='atendido').length} sub={`${Math.round(indsFiltDash.length>0?indsFiltDash.filter(i=>i.status==='atendido').length/indsFiltDash.length*100:0)}% conversão`} color={CYAN} icon="✅"/>
+                <KpiCard label="Atendidos"             value={new Set(indsFiltDash.filter(i=>['avaliado','tratamento','finalizado'].includes(i.status)).map(i=>i.paciente_nome.toLowerCase().trim())).size} sub={`${Math.round(indsFiltDash.length>0?new Set(indsFiltDash.filter(i=>['avaliado','tratamento','finalizado'].includes(i.status)).map(i=>i.paciente_nome.toLowerCase().trim())).size/indsFiltDash.length*100:0)}% conversão`} color={CYAN} icon="✅"/>
               </div>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20,marginBottom:20}}>
                 <div style={{background:'#fff',borderRadius:14,padding:20,border:'1px solid #E2E8F0'}}><h3 style={{fontSize:14,fontWeight:600,color:N,margin:'0 0 16px'}}>Indicações por Mês</h3>{indsPorMes.length===0?<div style={{textAlign:'center',color:'#94A3B8',padding:'40px 0',fontSize:13}}>Sem dados</div>:<ResponsiveContainer width="100%" height={220}><BarChart data={indsPorMes}><XAxis dataKey="mes" tick={{fontSize:11}}/><YAxis tick={{fontSize:11}} allowDecimals={false}/><Tooltip/><Bar dataKey="total" fill={G} radius={[4,4,0,0]} name="Indicações"/></BarChart></ResponsiveContainer>}</div>
@@ -445,7 +445,7 @@ export default function AdminClient() {
                 <div style={{overflowX:'auto'}}>
                   <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
                     <thead><tr style={{background:'#F8FAFC'}}>{['Gestor','Unidade','Status','Parceiros','Indicações','Atendidos','Conversão'].map(h=><th key={h} style={{padding:'10px 14px',textAlign:'left',color:'#475569',fontWeight:600,borderBottom:'1px solid #E2E8F0',whiteSpace:'nowrap'}}>{h}</th>)}</tr></thead>
-                    <tbody>{gestores.map((g,idx)=>{const uid=gestorUid(g);const pC=parceiros.filter(p=>p.unidade_id===uid).length;const iC=indicacoes.filter(i=>i.unidade_id===uid).length;const aC=indicacoes.filter(i=>i.unidade_id===uid&&i.status==='atendido').length;const conv=iC>0?Math.round(aC/iC*100):0;return(<tr key={g.id} style={{background:idx%2===0?'#fff':'#F8FAFC'}}><td style={{padding:'10px 14px',color:N,fontWeight:500}}>{g.nome}</td><td style={{padding:'10px 14px',color:'#64748B'}}>{(g.unidades as any)?.nome??'—'}</td><td style={{padding:'10px 14px'}}><span style={{background:g.status==='inativo'?DANGER+'18':G+'18',color:g.status==='inativo'?DANGER:G,borderRadius:20,padding:'2px 10px',fontSize:11,fontWeight:600}}>{g.status==='inativo'?'⏸ Pausado':'● Ativo'}</span></td><td style={{padding:'10px 14px',color:TEAL,fontWeight:600}}>{pC}</td><td style={{padding:'10px 14px',color:N}}>{iC}</td><td style={{padding:'10px 14px',color:G,fontWeight:600}}>{aC}</td><td style={{padding:'10px 14px'}}><span style={{background:conv>=50?G+'18':WARN+'18',color:conv>=50?G:WARN,borderRadius:20,padding:'2px 10px',fontSize:11,fontWeight:600}}>{conv}%</span></td></tr>)})}</tbody>
+                    <tbody>{gestores.map((g,idx)=>{const uid=gestorUid(g);const pC=parceiros.filter(p=>p.unidade_id===uid).length;const iC=indicacoes.filter(i=>i.unidade_id===uid).length;const aC=new Set(indicacoes.filter(i=>i.unidade_id===uid&&['avaliado','tratamento','finalizado'].includes(i.status)).map(i=>i.paciente_nome.toLowerCase().trim())).size;const conv=iC>0?Math.round(aC/iC*100):0;return(<tr key={g.id} style={{background:idx%2===0?'#fff':'#F8FAFC'}}><td style={{padding:'10px 14px',color:N,fontWeight:500}}>{g.nome}</td><td style={{padding:'10px 14px',color:'#64748B'}}>{(g.unidades as any)?.nome??'—'}</td><td style={{padding:'10px 14px'}}><span style={{background:g.status==='inativo'?DANGER+'18':G+'18',color:g.status==='inativo'?DANGER:G,borderRadius:20,padding:'2px 10px',fontSize:11,fontWeight:600}}>{g.status==='inativo'?'⏸ Pausado':'● Ativo'}</span></td><td style={{padding:'10px 14px',color:TEAL,fontWeight:600}}>{pC}</td><td style={{padding:'10px 14px',color:N}}>{iC}</td><td style={{padding:'10px 14px',color:G,fontWeight:600}}>{aC}</td><td style={{padding:'10px 14px'}}><span style={{background:conv>=50?G+'18':WARN+'18',color:conv>=50?G:WARN,borderRadius:20,padding:'2px 10px',fontSize:11,fontWeight:600}}>{conv}%</span></td></tr>)})}</tbody>
                   </table>
                 </div>
               </div>
