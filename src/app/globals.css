@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+:root {
+  --g:   #069E6E;
+  --s:   #3E7996;
+  --n:   #2D2E47;
+  --c:   #00BAB4;
+  --t:   #2F6C82;
+  --off: #E4F5F3;
+  --li:  #B0E8E6;
+}
+* { box-sizing: border-box; }
+body { font-family: 'DM Sans', 'Segoe UI', sans-serif; background: #F1F5F9; color: #1E293B; }
