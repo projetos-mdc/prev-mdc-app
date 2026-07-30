@@ -2,11 +2,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  LineChart, Line, PieChart, Pie, Cell, Legend
-} from 'recharts'
-
 const G = '#069E6E', N = '#2D2E47', TEAL = '#3E7996', CYAN = '#00BAB4'
 const WARN = '#F59E0B', DANGER = '#EF4444'
 const COLORS = [G, TEAL, CYAN, '#6366F1', '#EC4899', '#F97316', '#84CC16']
@@ -20,6 +15,93 @@ type Gestor    = { id:string; nome:string; email:string; senha:string; status:st
 type Parceiro  = { id:string; nome:string; email:string; especialidade:string; status:string; data_cadastro:string; unidade_id?:string; whatsapp?:string; senha?:string }
 type Indicacao = { id:string; paciente_nome:string; paciente_telefone?:string; observacoes?:string; responsavel?:string; status:string; modelo:string; data_indicacao:string; data_avaliacao?:string; parceiro_id?:string; unidade_id?:string }
 type Unidade   = { id:string; nome:string }
+
+// ─── CHART COMPONENTS (pure CSS/SVG, no dependencies) ────────────────────────
+function VBarChart({ data, color=G }:{ data:{name:string;value:number}[]; color?:string }) {
+  const max=Math.max(...data.map(d=>d.value),1)
+  return (
+    <div style={{display:'flex',alignItems:'flex-end',gap:6,height:180,padding:'0 4px'}}>
+      {data.map((d,i)=>(
+        <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:3,height:'100%',justifyContent:'flex-end'}}>
+          <div style={{fontSize:11,fontWeight:600,color:N}}>{d.value||''}</div>
+          <div style={{width:'100%',background:color,borderRadius:'4px 4px 0 0',height:`${Math.max((d.value/max)*140,d.value>0?4:0)}px`}} />
+          <div style={{fontSize:9,color:'#64748B',textAlign:'center',lineHeight:1.2}}>{d.name}</div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function HBarChart({ data, color=TEAL }:{ data:{name:string;value:number}[]; color?:string }) {
+  const max=Math.max(...data.map(d=>d.value),1)
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:8}}>
+      {data.map((d,i)=>(
+        <div key={i} style={{display:'flex',alignItems:'center',gap:10}}>
+          <div style={{width:100,fontSize:11,color:'#475569',textAlign:'right',flexShrink:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{d.name}</div>
+          <div style={{flex:1,background:'#F1F5F9',borderRadius:4,height:20,position:'relative'}}>
+            <div style={{position:'absolute',left:0,top:0,bottom:0,background:color,borderRadius:4,width:`${(d.value/max)*100}%`}} />
+          </div>
+          <div style={{width:28,fontSize:11,fontWeight:600,color:N,flexShrink:0}}>{d.value}</div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function DonutChart({ data }:{ data:{name:string;value:number}[] }) {
+  const total=data.reduce((s,d)=>s+d.value,0)
+  if(!total) return <div style={{textAlign:'center',color:'#94A3B8',padding:'40px 0',fontSize:13}}>Sem dados</div>
+  const r=60,cx=80,cy=80,sw=38,circ=2*Math.PI*r
+  let off=0
+  return (
+    <div style={{display:'flex',gap:16,alignItems:'center'}}>
+      <svg width={160} height={160} viewBox="0 0 160 160" style={{flexShrink:0}}>
+        {data.map((d,i)=>{
+          const pct=d.value/total,dash=pct*circ
+          const el=<circle key={i} cx={cx} cy={cy} r={r} fill="none" stroke={COLORS[i%COLORS.length]} strokeWidth={sw} strokeDasharray={`${dash} ${circ-dash}`} strokeDashoffset={-off*circ} transform="rotate(-90 80 80)"/>
+          off+=pct; return el
+        })}
+        <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central" fontSize={18} fontWeight={700} fill={N}>{total}</text>
+      </svg>
+      <div style={{display:'flex',flexDirection:'column',gap:6}}>
+        {data.map((d,i)=>(
+          <div key={i} style={{display:'flex',alignItems:'center',gap:6}}>
+            <div style={{width:10,height:10,borderRadius:2,background:COLORS[i%COLORS.length],flexShrink:0}}/>
+            <span style={{fontSize:11,color:'#475569'}}>{d.name}</span>
+            <span style={{fontSize:11,fontWeight:600,color:N,marginLeft:8}}>{Math.round(d.value/total*100)}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function LineChartSVG({ data }:{ data:{mes:string;consultoria:number;avaliacao:number}[] }) {
+  if(!data.length) return <div style={{textAlign:'center',color:'#94A3B8',padding:'40px 0',fontSize:13}}>Sem dados</div>
+  const W=500,H=160,pL=34,pR=10,pT=10,pB=28
+  const maxV=Math.max(...data.flatMap(d=>[d.consultoria,d.avaliacao]),1)
+  const xS=(i:number)=>pL+(i/(data.length-1||1))*(W-pL-pR)
+  const yS=(v:number)=>pT+(1-v/maxV)*(H-pT-pB)
+  const path=(key:'consultoria'|'avaliacao')=>data.map((d,i)=>`${i===0?'M':'L'}${xS(i)},${yS(d[key])}`).join(' ')
+  return (
+    <div>
+      <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{overflow:'visible'}}>
+        <line x1={pL} y1={pT} x2={pL} y2={H-pB} stroke="#E2E8F0"/>
+        <line x1={pL} y1={H-pB} x2={W-pR} y2={H-pB} stroke="#E2E8F0"/>
+        <path d={path('consultoria')} fill="none" stroke={G} strokeWidth={2}/>
+        <path d={path('avaliacao')} fill="none" stroke={TEAL} strokeWidth={2}/>
+        {data.map((d,i)=><circle key={`c${i}`} cx={xS(i)} cy={yS(d.consultoria)} r={4} fill={G}/>)}
+        {data.map((d,i)=><circle key={`a${i}`} cx={xS(i)} cy={yS(d.avaliacao)} r={4} fill={TEAL}/>)}
+        {data.map((d,i)=><text key={`t${i}`} x={xS(i)} y={H-pB+14} textAnchor="middle" fontSize={9} fill="#64748B">{d.mes}</text>)}
+      </svg>
+      <div style={{display:'flex',gap:16,justifyContent:'center',marginTop:8}}>
+        <div style={{display:'flex',alignItems:'center',gap:6,fontSize:11}}><div style={{width:24,height:3,background:G,borderRadius:2}}/><span style={{color:'#475569'}}>Consultoria</span></div>
+        <div style={{display:'flex',alignItems:'center',gap:6,fontSize:11}}><div style={{width:24,height:3,background:TEAL,borderRadius:2}}/><span style={{color:'#475569'}}>Avaliação</span></div>
+      </div>
+    </div>
+  )
+}
 
 const inp = (w?:string): React.CSSProperties => ({ width:w||'100%', padding:'9px 12px', borderRadius:8, border:'1.5px solid #CBD5E1', background:'#F8FAFC', fontSize:13, color:N, outline:'none', boxSizing:'border-box' })
 const btn = (color:string, disabled?:boolean): React.CSSProperties => ({ padding:'8px 16px', borderRadius:8, border:'none', background:disabled?'#CBD5E1':color, color:'#fff', fontWeight:600, fontSize:13, cursor:disabled?'not-allowed':'pointer', whiteSpace:'nowrap' })
@@ -432,14 +514,14 @@ export default function AdminClient() {
                 <KpiCard label="Atendidos"             value={new Set(indsFiltDash.filter(i=>['avaliado','tratamento','finalizado'].includes(i.status)).map(i=>i.paciente_nome.toLowerCase().trim())).size} sub={`${Math.round(indsFiltDash.length>0?new Set(indsFiltDash.filter(i=>['avaliado','tratamento','finalizado'].includes(i.status)).map(i=>i.paciente_nome.toLowerCase().trim())).size/indsFiltDash.length*100:0)}% conversão`} color={CYAN} icon="✅"/>
               </div>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20,marginBottom:20}}>
-                <div style={{background:'#fff',borderRadius:14,padding:20,border:'1px solid #E2E8F0'}}><h3 style={{fontSize:14,fontWeight:600,color:N,margin:'0 0 16px'}}>Indicações por Mês</h3>{indsPorMes.length===0?<div style={{textAlign:'center',color:'#94A3B8',padding:'40px 0',fontSize:13}}>Sem dados</div>:<ResponsiveContainer width="100%" height={220}><BarChart data={indsPorMes}><XAxis dataKey="mes" tick={{fontSize:11}}/><YAxis tick={{fontSize:11}} allowDecimals={false}/><Tooltip/><Bar dataKey="total" fill={G} radius={[4,4,0,0]} name="Indicações"/></BarChart></ResponsiveContainer>}</div>
-                <div style={{background:'#fff',borderRadius:14,padding:20,border:'1px solid #E2E8F0'}}><h3 style={{fontSize:14,fontWeight:600,color:N,margin:'0 0 16px'}}>Status das Indicações</h3>{statusData.length===0?<div style={{textAlign:'center',color:'#94A3B8',padding:'40px 0',fontSize:13}}>Sem dados</div>:<ResponsiveContainer width="100%" height={220}><PieChart><Pie data={statusData} cx="50%" cy="50%" outerRadius={75} dataKey="value" label={({name,percent})=>`${name} ${((percent??0)*100).toFixed(0)}%`} labelLine={false}>{statusData.map((_,i)=><Cell key={i} fill={COLORS[i%COLORS.length]}/>)}</Pie><Legend/></PieChart></ResponsiveContainer>}</div>
+                <div style={{background:'#fff',borderRadius:14,padding:20,border:'1px solid #E2E8F0'}}><h3 style={{fontSize:14,fontWeight:600,color:N,margin:'0 0 16px'}}>Indicações por Mês</h3>{indsPorMes.length===0?<div style={{textAlign:'center',color:'#94A3B8',padding:'40px 0',fontSize:13}}>Sem dados</div>:<VBarChart data={indsPorMes.map(d=>({name:d.mes,value:d.total}))} color={G}/>}</div>
+                <div style={{background:'#fff',borderRadius:14,padding:20,border:'1px solid #E2E8F0'}}><h3 style={{fontSize:14,fontWeight:600,color:N,margin:'0 0 16px'}}>Status das Indicações</h3><DonutChart data={statusData}/></div>
               </div>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20,marginBottom:20}}>
-                <div style={{background:'#fff',borderRadius:14,padding:20,border:'1px solid #E2E8F0'}}><h3 style={{fontSize:14,fontWeight:600,color:N,margin:'0 0 16px'}}>Indicações por Gestor</h3>{indsPorGestor.length===0?<div style={{textAlign:'center',color:'#94A3B8',padding:'40px 0',fontSize:13}}>Sem dados</div>:<ResponsiveContainer width="100%" height={220}><BarChart data={indsPorGestor} layout="vertical"><XAxis type="number" tick={{fontSize:11}} allowDecimals={false}/><YAxis dataKey="nome" type="category" width={110} tick={{fontSize:11}}/><Tooltip/><Bar dataKey="total" fill={TEAL} radius={[0,4,4,0]} name="Indicações"/></BarChart></ResponsiveContainer>}</div>
-                <div style={{background:'#fff',borderRadius:14,padding:20,border:'1px solid #E2E8F0'}}><h3 style={{fontSize:14,fontWeight:600,color:N,margin:'0 0 16px'}}>Parceiros por Gestor</h3>{parcsPorGestor.length===0?<div style={{textAlign:'center',color:'#94A3B8',padding:'40px 0',fontSize:13}}>Sem dados</div>:<ResponsiveContainer width="100%" height={220}><BarChart data={parcsPorGestor} layout="vertical"><XAxis type="number" tick={{fontSize:11}} allowDecimals={false}/><YAxis dataKey="nome" type="category" width={110} tick={{fontSize:11}}/><Tooltip/><Bar dataKey="total" fill={CYAN} radius={[0,4,4,0]} name="Parceiros"/></BarChart></ResponsiveContainer>}</div>
+                <div style={{background:'#fff',borderRadius:14,padding:20,border:'1px solid #E2E8F0'}}><h3 style={{fontSize:14,fontWeight:600,color:N,margin:'0 0 16px'}}>Indicações por Gestor</h3>{indsPorGestor.length===0?<div style={{textAlign:'center',color:'#94A3B8',padding:'40px 0',fontSize:13}}>Sem dados</div>:<HBarChart data={indsPorGestor.map(d=>({name:d.nome,value:d.total}))} color={TEAL}/>}</div>
+                <div style={{background:'#fff',borderRadius:14,padding:20,border:'1px solid #E2E8F0'}}><h3 style={{fontSize:14,fontWeight:600,color:N,margin:'0 0 16px'}}>Parceiros por Gestor</h3>{parcsPorGestor.length===0?<div style={{textAlign:'center',color:'#94A3B8',padding:'40px 0',fontSize:13}}>Sem dados</div>:<HBarChart data={parcsPorGestor.map(d=>({name:d.nome,value:d.total}))} color={CYAN}/>}</div>
               </div>
-              <div style={{background:'#fff',borderRadius:14,padding:20,border:'1px solid #E2E8F0',marginBottom:20}}><h3 style={{fontSize:14,fontWeight:600,color:N,margin:'0 0 16px'}}>Consultoria vs Avaliação por Mês</h3>{tiposPorMes.length===0?<div style={{textAlign:'center',color:'#94A3B8',padding:'40px 0',fontSize:13}}>Sem dados</div>:<ResponsiveContainer width="100%" height={220}><LineChart data={tiposPorMes}><XAxis dataKey="mes" tick={{fontSize:11}}/><YAxis tick={{fontSize:11}} allowDecimals={false}/><Tooltip/><Legend/><Line type="monotone" dataKey="consultoria" stroke={G} strokeWidth={2} dot={{r:4}} name="Consultoria"/><Line type="monotone" dataKey="avaliacao" stroke={TEAL} strokeWidth={2} dot={{r:4}} name="Avaliação"/></LineChart></ResponsiveContainer>}</div>
+              <div style={{background:'#fff',borderRadius:14,padding:20,border:'1px solid #E2E8F0',marginBottom:20}}><h3 style={{fontSize:14,fontWeight:600,color:N,margin:'0 0 16px'}}>Consultoria vs Avaliação por Mês</h3><LineChartSVG data={tiposPorMes}/></div>
               <div style={{background:'#fff',borderRadius:14,padding:20,border:'1px solid #E2E8F0'}}>
                 <h3 style={{fontSize:14,fontWeight:600,color:N,margin:'0 0 16px'}}>Produção por Gestor</h3>
                 <div style={{overflowX:'auto'}}>
