@@ -206,7 +206,7 @@ export default function AdminClient() {
 
   useEffect(() => {
     const s = localStorage.getItem('admin_session')
-    if (!s) { router.push('/login'); return }
+    if (!s) { router.push('/admin/login'); return }
     setAdmin(JSON.parse(s))
     loadAll()
   }, [loadAll, router])
