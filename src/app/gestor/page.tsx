@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
-const BASE_URL = 'https://meudentistaemcasa.com.br'
+const BASE_URL = 'https://prev-mdc-app.vercel.app'
 
 function qrSrc(parceiroId: string, beneficio: 'consultoria' | 'avaliacao') {
   const target = `${BASE_URL}/indicar/${parceiroId}?beneficio=${beneficio}`
