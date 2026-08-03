@@ -1,8 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { loginPartner } from '@/lib/auth'
+import { supabase } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,10 +17,55 @@ export default function Login() {
   async function handleLogin() {
     if (!email || !senha) { setErro('Preencha e-mail e senha.'); return }
     setLoading(true); setErro('')
-    const res = await loginPartner(email, senha)
+
+    const em = email.toLowerCase().trim()
+
+    // 1. Verifica se é administrador
+    const { data: admin } = await supabase
+      .from('administradores')
+      .select('*')
+      .eq('email', em)
+      .eq('senha', senha)
+      .maybeSingle()
+
+    if (admin) {
+      localStorage.setItem('admin_session', JSON.stringify(admin))
+      router.push('/admin')
+      return
+    }
+
+    // 2. Verifica se é gestor
+    const { data: gestor } = await supabase
+      .from('gestores')
+      .select('*, unidades(nome)')
+      .eq('email', em)
+      .eq('senha', senha)
+      .maybeSingle()
+
+    if (gestor) {
+      localStorage.setItem('gestor_session', JSON.stringify(gestor))
+      router.push('/gestor')
+      return
+    }
+
+    // 3. Verifica se é parceiro
+    const { data: parceiro } = await supabase
+      .from('parceiros')
+      .select('*')
+      .eq('email', em)
+      .eq('senha', senha)
+      .eq('status', 'ativo')
+      .maybeSingle()
+
     setLoading(false)
-    if (res.error) { setErro(res.error); return }
-    router.push('/portal')
+
+    if (parceiro) {
+      localStorage.setItem('mdc_partner', JSON.stringify(parceiro))
+      router.push('/portal')
+      return
+    }
+
+    setErro('E-mail ou senha incorretos.')
   }
 
   return (
@@ -29,35 +73,37 @@ export default function Login() {
       <div style={{ width: '100%', maxWidth: 400, background: '#fff', borderRadius: 16, border: '1px solid #E2E8F0', padding: '32px 28px' }}>
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <img src="/logo-mdc.png" alt="Meu Dentista em Casa" style={{ height: 56, margin: '0 auto 16px', display: 'block' }} />
-          <h2 style={{ fontSize: 20, fontWeight: 700, color: N, marginBottom: 4 }}>Portal do Parceiro</h2>
-          <p style={{ fontSize: 13, color: '#64748B' }}>Meu Dentista em Casa</p>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: N, marginBottom: 4 }}>Meu Dentista em Casa</h2>
+          <p style={{ fontSize: 13, color: '#64748B' }}>Digite seu e-mail e senha para entrar</p>
         </div>
 
-        {[
-          { label: 'E-mail', val: email, set: setEmail, type: 'email', ph: 'seu@email.com' },
-          { label: 'Senha', val: senha, set: setSenha, type: 'password', ph: '••••••••' },
-        ].map(f => (
-          <div key={f.label} style={{ marginBottom: 14 }}>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 5 }}>{f.label}</label>
-            <input
-              type={f.type} value={f.val} placeholder={f.ph}
-              onChange={e => f.set(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleLogin()}
-              style={{ width: '100%', padding: '10px 13px', borderRadius: 10, border: '1.5px solid #CBD5E1', fontSize: 14, color: N, outline: 'none' }}
-            />
-          </div>
-        ))}
+        <div style={{ marginBottom: 14 }}>
+          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 5 }}>E-mail</label>
+          <input
+            type="email" value={email} placeholder="seu@email.com"
+            onChange={e => setEmail(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleLogin()}
+            style={{ width: '100%', padding: '10px 13px', borderRadius: 10, border: '1.5px solid #CBD5E1', fontSize: 14, color: N, outline: 'none', boxSizing: 'border-box' }}
+          />
+        </div>
+        <div style={{ marginBottom: 18 }}>
+          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 5 }}>Senha</label>
+          <input
+            type="password" value={senha} placeholder="••••••••"
+            onChange={e => setSenha(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleLogin()}
+            style={{ width: '100%', padding: '10px 13px', borderRadius: 10, border: '1.5px solid #CBD5E1', fontSize: 14, color: N, outline: 'none', boxSizing: 'border-box' }}
+          />
+        </div>
 
-        {erro && <p style={{ color: '#EF4444', fontSize: 13, marginBottom: 10 }}>{erro}</p>}
+        {erro && <p style={{ color: '#EF4444', fontSize: 13, marginBottom: 12 }}>{erro}</p>}
 
         <button onClick={handleLogin} disabled={loading} style={{
           width: '100%', padding: '12px', borderRadius: 10, border: 'none',
           background: loading ? '#CBD5E1' : G, color: '#fff',
-          fontWeight: 600, fontSize: 14, cursor: loading ? 'not-allowed' : 'pointer', marginBottom: 14,
-        }}>{loading ? 'Entrando...' : 'Entrar no portal'}</button>
-
+          fontWeight: 600, fontSize: 14, cursor: loading ? 'not-allowed' : 'pointer',
+        }}>{loading ? 'Verificando...' : 'Entrar'}</button>
       </div>
     </div>
   )
 }
-
