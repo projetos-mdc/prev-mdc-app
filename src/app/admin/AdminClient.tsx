@@ -12,7 +12,7 @@ const STATUS_LABEL: Record<string,string> = { aguardando:'Aguardando contato', a
 const STATUS_COLOR: Record<string,string> = { aguardando:WARN, agendado:TEAL, avaliado:G, tratamento:'#065F46', finalizado:'#6366F1', cancelado:DANGER }
 
 type Gestor    = { id:string; nome:string; email:string; senha:string; status:string; created_at:string; unidade_id?:string; unidades?:{nome:string} }
-type Parceiro  = { id:string; nome:string; email:string; especialidade:string; status:string; data_cadastro:string; unidade_id?:string; whatsapp?:string; senha?:string }
+type Parceiro  = { id:string; nome:string; email?:string|null; especialidade:string; status:string; data_cadastro:string; unidade_id?:string; whatsapp?:string; senha?:string|null }
 type Indicacao = { id:string; paciente_nome:string; paciente_telefone?:string; observacoes?:string; responsavel?:string; status:string; modelo:string; data_indicacao:string; data_avaliacao?:string; parceiro_id?:string; unidade_id?:string }
 type Unidade   = { id:string; nome:string }
 
@@ -288,9 +288,12 @@ export default function AdminClient() {
   function abrirEditarParceiro(p:Parceiro) { setFormParceiro({id:p.id,nome:p.nome,email:p.email,senha:p.senha??'',especialidade:p.especialidade,whatsapp:p.whatsapp??'',unidade_id:p.unidade_id??'',status:p.status}); setErroParceiro(''); setModalParceiro('editar') }
   async function salvarParceiro() {
     setErroParceiro('')
-    if (!formParceiro.nome||!formParceiro.email||!formParceiro.senha||!formParceiro.especialidade){setErroParceiro('Preencha todos os campos obrigatórios.');return}
+    if (!formParceiro.nome||!formParceiro.especialidade){setErroParceiro('Nome e especialidade são obrigatórios.');return}
+    const emailVal = formParceiro.email.trim() || null
+    const senhaVal = formParceiro.senha.trim() || null
+    if (emailVal && !senhaVal) {setErroParceiro('Se informar e-mail, informe também a senha.');return}
     setSavingParceiro(true)
-    const payload={nome:formParceiro.nome,email:formParceiro.email.toLowerCase().trim(),senha:formParceiro.senha,especialidade:formParceiro.especialidade,whatsapp:formParceiro.whatsapp||null,unidade_id:formParceiro.unidade_id||null,status:formParceiro.status}
+    const payload={nome:formParceiro.nome,email:emailVal,senha:senhaVal,especialidade:formParceiro.especialidade,whatsapp:formParceiro.whatsapp||null,unidade_id:formParceiro.unidade_id||null,status:formParceiro.status}
     const {error}=modalParceiro==='criar'
       ? await supabase.from('parceiros').insert({...payload,tipo:'profissional'})
       : await supabase.from('parceiros').update(payload).eq('id',formParceiro.id)
@@ -409,7 +412,7 @@ export default function AdminClient() {
       <div style={{background:'#fff',borderRadius:16,padding:28,width:460,boxShadow:'0 20px 60px rgba(0,0,0,.2)',maxHeight:'90vh',overflowY:'auto'}}>
         <h3 style={{fontSize:16,fontWeight:700,color:N,margin:'0 0 20px'}}>{modalParceiro==='criar'?'+ Novo Parceiro':'✏️ Editar Parceiro'}</h3>
         <div style={{display:'flex',flexDirection:'column',gap:12}}>
-          {([{l:'Nome *',k:'nome',p:'Nome completo'},{l:'E-mail *',k:'email',p:'email@ex.com'},{l:'Senha *',k:'senha',p:'Senha'},{l:'WhatsApp',k:'whatsapp',p:'(00) 00000-0000'}] as {l:string;k:string;p:string}[]).map(f=>(
+          {([{l:'Nome *',k:'nome',p:'Nome completo'},{l:'E-mail (opcional)',k:'email',p:'email@ex.com'},{l:'Senha (opcional)',k:'senha',p:'Obrigatória se informar e-mail'},{l:'WhatsApp',k:'whatsapp',p:'(00) 00000-0000'}] as {l:string;k:string;p:string}[]).map(f=>(
             <div key={f.k}>{fieldLabel(f.l)}<input value={(formParceiro as any)[f.k]} onChange={e=>setFormParceiro(v=>({...v,[f.k]:e.target.value}))} style={inp()} placeholder={f.p} /></div>
           ))}
           <div>{fieldLabel('Especialidade *')}<select value={formParceiro.especialidade} onChange={e=>setFormParceiro(v=>({...v,especialidade:e.target.value}))} style={inp()}><option value="">Selecionar</option>{ESPECIALIDADES.map(s=><option key={s} value={s}>{s}</option>)}</select></div>
@@ -562,7 +565,7 @@ export default function AdminClient() {
               <div style={{background:'#fff',borderRadius:14,border:'1px solid #E2E8F0',overflow:'hidden'}}>
                 <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
                   <thead><tr style={{background:'#F8FAFC'}}>{['Nome','E-mail','Especialidade','Unidade','Cadastro','Status','Ações'].map(h=><th key={h} style={{padding:'12px 16px',textAlign:'left',color:'#475569',fontWeight:600,borderBottom:'1px solid #E2E8F0'}}>{h}</th>)}</tr></thead>
-                  <tbody>{parceiros.filter(p=>!buscaParceiro||p.nome.toLowerCase().includes(buscaParceiro.toLowerCase())||p.email.toLowerCase().includes(buscaParceiro.toLowerCase())).map((p,idx)=>{const uni=unidades.find(u=>u.id===p.unidade_id);return(<tr key={p.id} style={{background:idx%2===0?'#fff':'#F8FAFC'}}><td style={{padding:'12px 16px',color:N,fontWeight:500}}>{p.nome}</td><td style={{padding:'12px 16px',color:'#64748B'}}>{p.email}</td><td style={{padding:'12px 16px',color:'#64748B'}}>{p.especialidade}</td><td style={{padding:'12px 16px',color:TEAL}}>{uni?.nome??'—'}</td><td style={{padding:'12px 16px',color:'#64748B',whiteSpace:'nowrap'}}>{new Date(p.data_cadastro).toLocaleDateString('pt-BR')}</td><td style={{padding:'12px 16px'}}><span style={{background:p.status==='pendente'?WARN+'18':p.status==='rejeitado'?DANGER+'18':G+'18',color:p.status==='pendente'?WARN:p.status==='rejeitado'?DANGER:G,borderRadius:20,padding:'3px 10px',fontSize:11,fontWeight:600}}>{p.status==='pendente'?'⏳':p.status==='rejeitado'?'✕ Rejeitado':'● Ativo'}</span></td><td style={{padding:'12px 16px'}}><div style={{display:'flex',gap:6}}><button onClick={()=>abrirEditarParceiro(p)} style={btnOutline(TEAL)}>✏️ Editar</button><button onClick={()=>setConfirmDelete({tipo:'parceiro',id:p.id,nome:p.nome})} style={btnOutline(DANGER)}>🗑</button></div></td></tr>)})}</tbody>
+                  <tbody>{parceiros.filter(p=>!buscaParceiro||p.nome.toLowerCase().includes(buscaParceiro.toLowerCase())||(p.email??'').toLowerCase().includes(buscaParceiro.toLowerCase())).map((p,idx)=>{const uni=unidades.find(u=>u.id===p.unidade_id);return(<tr key={p.id} style={{background:idx%2===0?'#fff':'#F8FAFC'}}><td style={{padding:'12px 16px',color:N,fontWeight:500}}>{p.nome}</td><td style={{padding:'12px 16px',color:p.email?'#64748B':'#CBD5E1',fontStyle:p.email?'normal':'italic'}}>{p.email??'— sem e-mail'}</td><td style={{padding:'12px 16px',color:'#64748B'}}>{p.especialidade}</td><td style={{padding:'12px 16px',color:TEAL}}>{uni?.nome??'—'}</td><td style={{padding:'12px 16px',color:'#64748B',whiteSpace:'nowrap'}}>{new Date(p.data_cadastro).toLocaleDateString('pt-BR')}</td><td style={{padding:'12px 16px'}}><span style={{background:p.status==='pendente'?WARN+'18':p.status==='rejeitado'?DANGER+'18':G+'18',color:p.status==='pendente'?WARN:p.status==='rejeitado'?DANGER:G,borderRadius:20,padding:'3px 10px',fontSize:11,fontWeight:600}}>{p.status==='pendente'?'⏳':p.status==='rejeitado'?'✕ Rejeitado':'● Ativo'}</span></td><td style={{padding:'12px 16px'}}><div style={{display:'flex',gap:6}}><button onClick={()=>abrirEditarParceiro(p)} style={btnOutline(TEAL)}>✏️ Editar</button><button onClick={()=>setConfirmDelete({tipo:'parceiro',id:p.id,nome:p.nome})} style={btnOutline(DANGER)}>🗑</button></div></td></tr>)})}</tbody>
                 </table>
               </div>
             </div>

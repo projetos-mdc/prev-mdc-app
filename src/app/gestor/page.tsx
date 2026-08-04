@@ -37,7 +37,7 @@ type Indicacao = {
   parceiros:{nome:string; especialidade:string}|null
 }
 type Parceiro = {
-  id:string; nome:string; email:string; whatsapp:string;
+  id:string; nome:string; email?:string|null; whatsapp:string;
   tipo:string; especialidade:string; segmento:string;
   status:string; data_cadastro:string
 }
@@ -475,7 +475,7 @@ export default function GestorDashboard() {
                   <div key={p.id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 12px', background:'#fff', borderRadius:9, border:'1px solid #FDE68A', marginBottom:6 }}>
                     <div>
                       <div style={{ fontSize:13, fontWeight:600, color:N }}>{p.nome}</div>
-                      <div style={{ fontSize:11, color:'#94A3B8' }}>{p.especialidade} · {p.email} · {p.whatsapp}</div>
+                      <div style={{ fontSize:11, color:'#94A3B8' }}>{p.especialidade}{p.email ? ` · ${p.email}` : ''}{p.whatsapp ? ` · ${p.whatsapp}` : ''}</div>
                       <div style={{ fontSize:11, color:'#94A3B8' }}>Cadastrado em {new Date(p.data_cadastro).toLocaleDateString('pt-BR')}</div>
                     </div>
                     <div style={{ display:'flex', gap:8, flexShrink:0, marginLeft:16 }}>
@@ -513,7 +513,7 @@ export default function GestorDashboard() {
                   <div key={p.id} style={{ display:'grid', gridTemplateColumns:'1.6fr 1fr 1fr 80px 100px 100px', gap:8, padding:'12px 16px', borderBottom: i < parceiros.length-1 ? '1px solid #F1F5F9':'none', alignItems:'center', background: p.status==='pendente' ? '#FFFDF5':'#fff' }}>
                     <div>
                       <div style={{ fontSize:13, fontWeight:600, color:N }}>{p.nome}</div>
-                      <div style={{ fontSize:11, color:'#94A3B8' }}>{p.email}</div>
+                      {p.email && <div style={{ fontSize:11, color:'#94A3B8' }}>{p.email}</div>}
                     </div>
                     <div style={{ fontSize:13, color:'#64748B' }}>{p.especialidade}</div>
                     <div style={{ fontSize:12, color:'#64748B' }}>{p.whatsapp}</div>
@@ -553,7 +553,7 @@ export default function GestorDashboard() {
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:20 }}>
               <div>
                 <div style={{ fontSize:16, fontWeight:700, color:N }}>{qrModal.nome}</div>
-                <div style={{ fontSize:12, color:'#64748B', marginTop:2 }}>{qrModal.especialidade} · {qrModal.email}</div>
+                <div style={{ fontSize:12, color:'#64748B', marginTop:2 }}>{qrModal.especialidade}{qrModal.email ? ` · ${qrModal.email}` : ''}</div>
               </div>
               <button onClick={() => setQrModal(null)} style={{ background:'none', border:'none', fontSize:22, cursor:'pointer', color:'#94A3B8', lineHeight:1 }}>×</button>
             </div>
