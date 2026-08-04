@@ -36,7 +36,7 @@ export default function AdminLogin() {
     <div style={{ minHeight: '100vh', background: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
       <div style={{ background: '#1E293B', borderRadius: 16, border: '1px solid #334155', padding: '32px 28px', maxWidth: 400, width: '100%' }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <img src="/logo-mdc.png" alt="Meu Dentista em Casa" style={{ height: 56, margin: '0 auto 16px', display: 'block' }} />
+          <img src="/logo-mdc.png" alt="Meu Dentista em Casa" style={{ height: 40, margin: '0 auto 16px', display: 'block', filter: 'brightness(0) invert(1)' }} />
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#F1F5F9', marginBottom: 4 }}>Super Admin</h1>
           <p style={{ fontSize: 13, color: '#64748B' }}>Acesso restrito — Meu Dentista em Casa</p>
         </div>

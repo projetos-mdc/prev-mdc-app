@@ -465,7 +465,7 @@ export default function AdminClient() {
       {/* SIDEBAR */}
       <aside style={{width:220,background:'#1E293B',display:'flex',flexDirection:'column',borderRight:'1px solid #334155',flexShrink:0}}>
         <div style={{padding:'24px 20px 16px',borderBottom:'1px solid #334155'}}>
-          <img src="/logo-mdc.png" alt="MDC" style={{height:40,display:'block',marginBottom:12}} />
+          <img src="/logo-mdc.png" alt="MDC" style={{height:32,display:'block',marginBottom:12,filter:'brightness(0) invert(1)'}} />
           <div style={{fontSize:10,color:'#64748B',fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase'}}>Super Admin</div>
           <div style={{fontSize:12,color:'#94A3B8',marginTop:3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{admin.email}</div>
         </div>
