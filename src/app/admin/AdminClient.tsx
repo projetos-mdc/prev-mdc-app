@@ -285,7 +285,7 @@ export default function AdminClient() {
 
   // ─── AÇÕES PARCEIRO ───────────────────────────────────────────────────────
   function abrirCriarParceiro() { setFormParceiro({id:'',nome:'',email:'',senha:'',especialidade:'',whatsapp:'',unidade_id:'',status:'ativo'}); setErroParceiro(''); setModalParceiro('criar') }
-  function abrirEditarParceiro(p:Parceiro) { setFormParceiro({id:p.id,nome:p.nome,email:p.email,senha:p.senha??'',especialidade:p.especialidade,whatsapp:p.whatsapp??'',unidade_id:p.unidade_id??'',status:p.status}); setErroParceiro(''); setModalParceiro('editar') }
+  function abrirEditarParceiro(p:Parceiro) { setFormParceiro({id:p.id,nome:p.nome,email:p.email??'',senha:p.senha??'',especialidade:p.especialidade,whatsapp:p.whatsapp??'',unidade_id:p.unidade_id??'',status:p.status}); setErroParceiro(''); setModalParceiro('editar') }
   async function salvarParceiro() {
     setErroParceiro('')
     if (!formParceiro.nome||!formParceiro.especialidade){setErroParceiro('Nome e especialidade são obrigatórios.');return}
