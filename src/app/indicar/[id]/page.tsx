@@ -125,7 +125,7 @@ export default function IndicarPage() {
         {/* Logo */}
         <div style={{ marginTop:28, paddingTop:20, borderTop:'1px solid #F1F5F9' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <div style={{ width:44,height:44,borderRadius:'50%',background:'#008194',display:'inline-flex',alignItems:'center',justifyContent:'center' }}><img src="/logo-mdc.png" alt="Meu Dentista em Casa" style={{ height:32 }} /></div>
+          <img src="/logo-mdc.png" alt="Meu Dentista em Casa" style={{ height:36 }} />
           <div style={{ fontSize:11, color:'#CBD5E1', marginTop:6 }}>meudentistaemcasa.com.br</div>
         </div>
       </div>
