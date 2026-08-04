@@ -72,7 +72,9 @@ export default function Login() {
     <div style={{ minHeight: '100vh', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
       <div style={{ width: '100%', maxWidth: 400, background: '#fff', borderRadius: 16, border: '1px solid #E2E8F0', padding: '32px 28px' }}>
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <img src="/logo-mdc.png" alt="Meu Dentista em Casa" style={{ height: 56, margin: '0 auto 16px', display: 'block' }} />
+          <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#008194', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <img src="/logo-mdc.png" alt="Meu Dentista em Casa" style={{ height: 52, display: 'block' }} />
+          </div>
           <h2 style={{ fontSize: 20, fontWeight: 700, color: N, marginBottom: 4 }}>Meu Dentista em Casa</h2>
           <p style={{ fontSize: 13, color: '#64748B' }}>Digite seu e-mail e senha para entrar</p>
         </div>
