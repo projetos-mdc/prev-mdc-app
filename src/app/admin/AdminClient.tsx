@@ -599,7 +599,10 @@ export default function AdminClient() {
                     </select>
                   </div>
                   <div style={{flex:1,minWidth:180}}><label style={{fontSize:11,fontWeight:600,color:'#64748B',display:'block',marginBottom:4}}>Buscar</label><input placeholder="Paciente, parceiro..." value={pacBusca} onChange={e=>setPacBusca(e.target.value)} style={inp()}/></div>
-                  <button onClick={abrirCriarInd} style={btn(G)}>+ Nova Indicação</button>
+                  <div style={{display:'flex',gap:8}}>
+                    <button onClick={loadAll} style={btn(TEAL)}>↻ Atualizar</button>
+                    <button onClick={abrirCriarInd} style={btn(G)}>+ Nova Indicação</button>
+                  </div>
                 </div>
                 <div style={{marginTop:10,fontSize:12,color:'#64748B'}}>
                   Exibindo <strong style={{color:N}}>{indsFiltPac.length}</strong> de {indicacoes.length} indicações
