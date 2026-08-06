@@ -172,7 +172,7 @@ export default function AdminClient() {
 
   // Modal indicação
   const [modalInd,  setModalInd]  = useState<'criar'|'editar'|null>(null)
-  const [formInd,   setFormInd]   = useState({ id:'', paciente_nome:'', paciente_telefone:'', observacoes:'', responsavel:'', status:'aguardando_contato', modelo:'consultoria', data_indicacao:'', parceiro_id:'', unidade_id:'' })
+  const [formInd,   setFormInd]   = useState({ id:'', paciente_nome:'', paciente_telefone:'', observacoes:'', responsavel:'', status:'aguardando', modelo:'consultoria', data_indicacao:'', parceiro_id:'', unidade_id:'' })
   const [savingInd, setSavingInd] = useState(false)
   const [erroInd,   setErroInd]   = useState('')
 
@@ -305,7 +305,7 @@ export default function AdminClient() {
   // ─── AÇÕES INDICAÇÃO ──────────────────────────────────────────────────────
   function abrirCriarInd() {
     const hoje=new Date().toISOString().split('T')[0]
-    setFormInd({id:'',paciente_nome:'',paciente_telefone:'',observacoes:'',responsavel:'',status:'aguardando_contato',modelo:'consultoria',data_indicacao:hoje,parceiro_id:'',unidade_id:''})
+    setFormInd({id:'',paciente_nome:'',paciente_telefone:'',observacoes:'',responsavel:'',status:'aguardando',modelo:'consultoria',data_indicacao:hoje,parceiro_id:'',unidade_id:''})
     setErroInd(''); setModalInd('criar')
   }
   function abrirEditarInd(i:Indicacao) {
